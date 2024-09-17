@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 const isPublicRoute: (req: NextRequest) => boolean = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
 
 export default clerkMiddleware((auth: ClerkMiddlewareAuth, request: NextRequest): NextResponse | void => {
-  const url: NextURL = request.nextUrl.clone();
+  const url: NextURL = request.nextUrl;
 
   if (url.pathname === "/") {
     if (auth().userId) {

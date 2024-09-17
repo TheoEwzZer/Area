@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { ReactElement } from "react";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -61,18 +61,16 @@ export function Navbar(): ReactElement {
       </Sheet>
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
         <div className="ml-auto flex-1 sm:flex-initial"/>
-        <ClerkProvider>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <Button className="ml-4" variant="outline">
+        <SignedOut>
+          <SignInButton mode="modal">
+            <Button className="ml-4" variant="outline">
                 Sign In
-              </Button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-        </ClerkProvider>
+            </Button>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
       </div>
     </header>
   );

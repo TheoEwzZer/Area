@@ -1,11 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import Link from "next/link";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 
 const services = [
@@ -33,35 +31,7 @@ export default function HomePage() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <header className="px-4 lg:px-6 h-14 flex items-center bg-white border-b">
-        <Link className="flex items-center justify-center" href="#">
-          <span className="text-2xl font-bold">AREA</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            Home
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
-            My Applets
-          </Link>
-          <Link className="text-sm font-medium hover:underline underline-offset-4 mr:4" href="#">
-            Create
-          </Link>
-          <ClerkProvider>
-            <SignedOut>
-            <SignInButton mode="modal">
-              <Button className="ml-4" variant="outline">
-                Sign In
-              </Button>
-            </SignInButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-          </ClerkProvider>
-        </nav>
-      </header>
+    <div className="flex flex-col min-h-screen">
       <main className="flex-1 py-12 px-4 max-w-5xl mx-auto w-full">
         <h1 className="text-4xl font-bold text-center mb-8">Select your favorite services</h1>
         <div className="max-w-md mx-auto mb-8">

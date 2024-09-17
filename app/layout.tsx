@@ -4,6 +4,7 @@ import "./globals.css";
 import { ReactNode, ReactElement } from "react";
 import Navbar from "@/components/navbar";
 import { NextFontWithVariable } from "next/dist/compiled/@next/font";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans: NextFontWithVariable = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,12 +27,14 @@ function RootLayout({
 }: Readonly<{ children: ReactNode }>): ReactElement {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Navbar />
-        {children}
-      </body>
+      <ClerkProvider>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <Navbar />
+          {children}
+        </body>
+      </ClerkProvider>
     </html>
   );
 }

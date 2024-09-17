@@ -1,104 +1,102 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
-import { ReactElement } from "react";
 
-function Home(): ReactElement {
+const services = [
+  { name: "Discord", color: "#788CFF", image: "/discord.svg" },
+  { name: "Gmail", color: "#EA4335", image: "/gmail.svg" },
+  { name: "Spotify", color: "#1DB954", image: "/spotify.svg" },
+  { name: "Twitch", color: "#9146FF", image: "/twitch.svg" },
+  { name: "Google Calendar", color: "#4285F4", image: "/calendar.svg" },
+  { name: "Youtube", color: "#D00000", image: "/youtube.svg" },
+  { name: "Deezer", color: "#00C7F2", image: "/deezer.svg" },
+  { name: "OneDrive", color: "#0078D4", image: "/onedrive.svg" },
+  { name: "Google Drive", color: "#F5E592", image: "/google-drive.svg" },
+  { name: "Outlook", color: "#0078D4", image: "/outlook.svg" },
+  { name: "Teams", color: "#6264A7", image: "/teams.svg" },
+  { name: "Weather", color: "#00A5E5", image: "/weather.svg" },
+  { name: "Google Translate", color: "#374255", image: "/google-translate.svg" },
+  { name: "Amazon", color: "#FF9900", image: "/amazon.svg" },
+];
+
+export default function HomePage() {
+  const [filter, setFilter] = useState("");
+
+  const filteredServices = services.filter((service) =>
+    service.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="flex flex-col min-h-screen bg-gray-100">
+      <header className="px-4 lg:px-6 h-14 flex items-center bg-white border-b">
+        <Link className="flex items-center justify-center" href="#">
+          <span className="text-2xl font-bold">AREA</span>
+        </Link>
+        <nav className="ml-auto flex gap-4 sm:gap-6">
+          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
+            Home
+          </Link>
+          <Link className="text-sm font-medium hover:underline underline-offset-4" href="#">
+            My Applets
+          </Link>
+          <Link className="text-sm font-medium hover:underline underline-offset-4 mr:4" href="#">
+            Create
+          </Link>
+          <ClerkProvider>
+            <SignedOut>
+            <SignInButton mode="modal">
+              <Button className="ml-4" variant="outline">
+                Sign In
+              </Button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          </ClerkProvider>
+        </nav>
+      </header>
+      <main className="flex-1 py-12 px-4 max-w-5xl mx-auto w-full">
+        <h1 className="text-4xl font-bold text-center mb-8">Select your favorite services</h1>
+        <div className="max-w-md mx-auto mb-8">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Filter services"
+              className="pl-8 bg-white"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {filteredServices.map((service) => (
+            <Button
+              key={service.name}
+              className="h-16 text-white justify-center items-center px-4 rounded-md"
+              style={{ backgroundColor: service.color }}
+            >
+              <Image
+                src={service.image}
+                alt={service.name}
+                width={32}
+                height={32}
+                className="mr-2"
+              />
+              <span className="bold">{service.name}</span>
+            </Button>
+          ))}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      <footer className="py-6 text-center bg-white border-t">
+        <p className="text-sm text-gray-500">© 2023 AREA. All rights reserved.</p>
       </footer>
     </div>
   );
 }
-
-export default Home;

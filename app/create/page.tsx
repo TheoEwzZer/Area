@@ -1,179 +1,109 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, ChevronDown, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Plus, X, HelpCircle, Zap, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
-interface Action {
-  id: number
-  service: string
-  action: string
+type BlockType = "if" | "then"
+
+interface Block {
+  type: BlockType
+  text: string
+  icon: React.ReactNode
 }
 
-interface ModalState {
-  isOpen: boolean
-  type: "trigger" | "action"
-  id: number | null
-  isService: boolean
-}
+const initialBlocks: Block[] = [
+  { type: "if", text: "Choose a trigger", icon: <Zap className="h-6 w-6" /> },
+  { type: "then", text: "Choose an action", icon: <Check className="h-6 w-6" /> },
+];
 
-const services = {
-  trigger: ["Weather", "Time", "Location", "YouTube"],
-  action: ["Notification", "Email", "Smart Home", "SMS"]
-};
+export default function WorkflowBuilder() {
+  const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
 
-const actions = {
-  trigger: ["Rain forecast", "Sunset", "Enter area", "New liked video"],
-  action: ["Send notification", "Send email", "Turn on lights", "Send an SMS"]
-};
-
-function AppletCreator() {
-  const [trigger, setTrigger] = useState({ service: "", action: "" });
-  const [actionList, setActionList] = useState<Action[]>([]);
-  const [modalState, setModalState] = useState<ModalState>({ isOpen: false, type: "trigger", id: null, isService: true });
-
-  const addAction = () => {
-    setActionList([...actionList, { id: Date.now(), service: "", action: "" }]);
+  const addBlock = (type: BlockType) => {
+    const newBlock: Block = { 
+      type, 
+      text: type === "if" ? "Choose a trigger" : "Choose an action", 
+      icon: type === "if" ? <Zap className="h-6 w-6" /> : <Check className="h-6 w-6" />
+    };
+    setBlocks([...blocks, newBlock]);
   };
 
-  const openModal = (type: "trigger" | "action", id: number | null, isService: boolean) => {
-    setModalState({ isOpen: true, type, id, isService });
+  const removeBlock = (index: number) => {
+    setBlocks(blocks.filter((_, i) => i !== index));
   };
 
-  const closeModal = () => {
-    setModalState(prev => ({ ...prev, isOpen: false }));
-  };
-
-  const selectOption = (option: string) => {
-    const { type, id, isService } = modalState;
-    if (type === "trigger") {
-      setTrigger(prev => ({ ...prev, [isService ? "service" : "action"]: option }));
-    } else {
-      setActionList(prev => prev.map(item => 
-        item.id === id ? { ...item, [isService ? "service" : "action"]: option } : item
-      ));
-    }
-    closeModal();
-  };
-
-  const removeAction = (id: number) => {
-    setActionList(actionList.filter(action => action.id !== id));
+  const getBlockColor = (type: BlockType) => {
+    return type === "if" ? "bg-red-500" : "bg-yellow-500";
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-md mx-auto space-y-4">
-        <Card className="bg-red-500 text-white">
-          <CardContent className="p-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <span className="text-2xl font-bold mr-2">If</span>
-                {trigger.service && (
-                  <>
-                    <span className="text-xl">{trigger.service}</span>
-                    <span className="text-xl ml-2">{trigger.action}</span>
-                  </>
-                )}
+    <div className="max-w-4xl mx-auto p-8">
+      <div className="flex justify-between items-center mb-8">
+        <Link href="/">
+        </Link>
+        <h1 className="text-4xl font-bold">Create your own Workflow</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <HelpCircle className="h-6 w-6" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-2">How to use</h2>
+            <p>Create your workflow by adding &quotIf&quot and &quotThen&quot blocks. Click the &quot+&quot button to add a new block.</p>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <div className="space-y-8">
+        {blocks.map((block, index) => (
+          <div key={index} className="relative">
+            {/* Mise à jour du lien pour pointer vers la page dans le dossier "selection" */}
+            <Link href={`/selection?type=${block.type}`}>
+              <div className={`flex items-center p-6 rounded-lg text-white ${getBlockColor(block.type)} cursor-pointer hover:opacity-90 transition-opacity`}>
+                <div className="text-3xl font-bold capitalize mr-6">{block.type}</div>
+                {block.icon}
+                <div className="ml-6 text-xl">{block.text}</div>
               </div>
-              {trigger.service && (
-                <div>
-                  <Button variant="ghost" size="sm" className="text-white" onClick={() => openModal("trigger", null, true)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-white" onClick={() => setTrigger({ service: "", action: "" })}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-            {!trigger.service && (
-              <Button 
-                onClick={() => openModal("trigger", null, true)} 
-                variant="ghost" 
-                className="w-full mt-2 bg-red-600 hover:bg-red-700"
-              >
-                Add trigger
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {actionList.map((action, index) => (
-          <React.Fragment key={action.id}>
-            <div className="flex justify-center">
-              <ChevronDown className="h-8 w-8 text-gray-500" />
-            </div>
-            <Card className="bg-green-500 text-white">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-2xl font-bold mr-2">{index === 0 ? "Then" : "And"}</span>
-                    {action.service && (
-                      <>
-                        <span className="text-xl">{action.service}</span>
-                        <span className="text-xl ml-2">{action.action}</span>
-                      </>
-                    )}
-                  </div>
-                  {action.service && (
-                    <div>
-                      <Button variant="ghost" size="sm" className="text-white" onClick={() => openModal("action", action.id, true)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-white" onClick={() => removeAction(action.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                {!action.service && (
-                  <Button 
-                    onClick={() => openModal("action", action.id, true)} 
-                    variant="ghost" 
-                    className="w-full mt-2 bg-green-600 hover:bg-green-700"
-                  >
-                    Add action
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </React.Fragment>
-        ))}
-
-        {(trigger.service || actionList.length > 0) && (
-          <div className="flex justify-center">
-            <Button onClick={addAction} variant="outline" size="icon" className="rounded-full">
-              <Plus className="h-4 w-4" />
+            </Link>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute top-2 right-2 text-white"
+              onClick={() => removeBlock(index)}
+            >
+              <X className="h-4 w-4" />
             </Button>
           </div>
-        )}
-
-        <Dialog open={modalState.isOpen} onOpenChange={closeModal}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                Select {modalState.isService ? "Service" : "Action"}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-4">
-              {(modalState.isService ? services[modalState.type] : actions[modalState.type]).map((option) => (
-                <Button key={option} onClick={() => selectOption(option)} variant="outline">
-                  {option}
-                </Button>
-              ))}
+        ))}
+      </div>
+      <div className="mt-8 flex justify-center">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="lg" className="rounded-full">
+              <Plus className="h-6 w-6" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Choose block type</h2>
+            <div className="flex justify-around">
+              <Button onClick={() => addBlock("if")} className="bg-red-500 hover:bg-red-600">
+                Add If
+              </Button>
+              <Button onClick={() => addBlock("then")} className="bg-yellow-500 hover:bg-yellow-600">
+                Add Then
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
+      <div className="mt-12">
+        <Button className="w-full bg-black text-white hover:bg-gray-800 text-lg py-6">
+          Save
+        </Button>
+      </div>
     </div>
   );
 }
-
-export default AppletCreator;

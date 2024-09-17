@@ -3,13 +3,24 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { ReactElement } from "react";
+import { ReactElement, useState, useEffect } from "react";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { usePathname } from "next/navigation";
 
 export function Navbar(): ReactElement | null {
   const pathname: string = usePathname();
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+  useEffect((): void => {
+    const checkAdmin: () => Promise<void> = async (): Promise<void> => {
+      const response = await fetch("/api/check-admin");
+      const data = await response.json();
+      setIsAdmin(data.isAdmin);
+    };
+  
+    checkAdmin();
+  }, []);
 
   if (pathname === "/sign-in" || pathname === "/sign-up") {
     return null;
@@ -36,6 +47,14 @@ export function Navbar(): ReactElement | null {
         >
           Create
         </Link>
+        {isAdmin && (
+          <Link
+            href="/admin/users"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Admin
+          </Link>
+        )}
       </nav>
       <Sheet>
         <SheetTrigger asChild>
@@ -65,6 +84,14 @@ export function Navbar(): ReactElement | null {
             >
               Create
             </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/users"
+                className="text-muted-foreground hover:text-foreground"
+              >
+            Admin
+              </Link>
+            )}
           </nav>
         </SheetContent>
       </Sheet>

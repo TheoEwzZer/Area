@@ -1,4 +1,4 @@
-import { clerkClient, User } from "@clerk/nextjs/server";
+import { User, clerkClient } from "@clerk/nextjs/server";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,14 +9,14 @@ async function AdminUserManagement(): Promise<ReactElement> {
   let users: User[] = [];
 
   try {
-    const userList: { data: User[] } = await clerkClient.users.getUserList();
+    const userList: { data: User[] } = await clerkClient().users.getUserList();
     users = userList.data;
   } catch (error) {
     console.error("Failed to fetch users:", error);
   }
 
   return (
-    <Card className="w-full">
+    <Card className="m-4">
       <CardHeader>
         <CardTitle>User Management</CardTitle>
       </CardHeader>

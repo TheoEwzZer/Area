@@ -1,22 +1,14 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { NextFontWithVariable } from "next/dist/compiled/@next/font";
 import { ReactNode, ReactElement } from "react";
-import {
-  ClerkProvider,
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  UserButton
-} from "@clerk/nextjs";
 
-const geistSans: NextFontWithVariable = localFont({
+const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
-const geistMono: NextFontWithVariable = localFont({
+const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
@@ -31,21 +23,13 @@ function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>): ReactElement {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <SignedOut>
-            <SignInButton />
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
   );
 }
 

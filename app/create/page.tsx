@@ -242,12 +242,7 @@ export default function WorkflowBuilder() {
               >
                 <DialogTrigger asChild>
                   <div
-                    className="flex w-full cursor-pointer items-center rounded-lg p-6 text-white transition-opacity hover:opacity-90"
-                    style={{
-                      backgroundColor:
-                        block.color ??
-                        (block.type === "action" ? "#EF4444" : "#F59E0B"),
-                    }}
+                    className={`flex w-full cursor-pointer items-center rounded-lg p-6 text-white transition-opacity hover:opacity-90 ${block.color ? "" : block.type === "action" ? "bg-red-500" : "bg-yellow-500"}`}
                     onClick={() => setSelectedBlockIndex(index)}
                   >
                     <div className="mr-6 text-3xl font-bold capitalize">

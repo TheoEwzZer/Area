@@ -28,75 +28,52 @@ export function Navbar(): ReactElement | null {
 
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b px-4 md:px-6 bg-white">
-      <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-        <Link
-          href="/create"
-          className="flex items-center gap-2 text-lg font-semibold md:text-base"
-        >
-          <span className="text-2xl font-bold">AREA</span>
-        </Link>
-        <Link
-          href="/my-applets"
-          className="text-foreground transition-colors hover:text-foreground"
-        >
-          My Applets
-        </Link>
-        <Link
-          href="/create"
-          className="text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Create
-        </Link>
-        {isAdmin && (
-          <Link
-            href="/admin/users"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Admin
-          </Link>
-        )}
-      </nav>
+      <Link
+        href="/create"
+        className="flex items-center gap-2 text-lg font-semibold md:text-base"
+      >
+        <span className="text-2xl font-bold">AREA</span>
+      </Link>
       <Sheet>
         <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0 md:hidden"
-          >
+          <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left">
           <nav className="grid gap-6 text-lg font-medium">
-            <Link
-              href="/create"
-              className="flex items-center gap-2 text-lg font-semibold"
-            >
+            <Link href="/create" className="flex items-center gap-2 text-lg font-semibold">
               <span className="text-2xl font-bold">AREA</span>
             </Link>
             <Link href="/my-applets" className="hover:text-foreground">
               My Applets
             </Link>
-            <Link
-              href="/create"
-              className="text-muted-foreground hover:text-foreground"
-            >
+            <Link href="/create" className="text-muted-foreground hover:text-foreground">
               Create
             </Link>
             {isAdmin && (
-              <Link
-                href="/admin/users"
-                className="text-muted-foreground hover:text-foreground"
-              >
-            Admin
+              <Link href="/admin/users" className="text-muted-foreground hover:text-foreground">
+                Admin
               </Link>
             )}
           </nav>
         </SheetContent>
       </Sheet>
-      <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        <div className="ml-auto flex-1 sm:flex-initial" />
+      <div className="flex ml-auto items-center gap-4">
+        <nav className="hidden md:flex md:items-center md:gap-6">
+          <Link href="/my-applets" className="text-foreground transition-colors hover:text-foreground whitespace-nowrap">
+            My Applets
+          </Link>
+          <Link href="/create" className="text-foreground transition-colors hover:text-foreground whitespace-nowrap">
+            Create
+          </Link>
+          {isAdmin && (
+            <Link href="/admin/users" className="text-foreground transition-colors hover:text-foreground whitespace-nowrap">
+              Admin
+            </Link>
+          )}
+        </nav>
         <SignedOut>
           <SignInButton mode="modal">
             <Button className="ml-4" variant="outline">

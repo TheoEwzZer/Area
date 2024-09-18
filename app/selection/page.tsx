@@ -35,7 +35,6 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <main className="flex-1 py-12 px-4 max-w-5xl mx-auto w-full">
         <div className="relative flex items-center mb-6">
-          {/* Back Button */}
           <Link href="/create">
             <button
               className="absolute left-0 border border-black text-black font-semibold px-4 py-2 rounded-full transition-colors hover:bg-gray-200"

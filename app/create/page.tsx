@@ -60,7 +60,6 @@ export default function WorkflowBuilder() {
       <div className="space-y-8">
         {blocks.map((block, index) => (
           <div key={index} className="relative">
-            {/* Mise à jour du lien pour pointer vers la page dans le dossier "selection" */}
             <Link href={`/selection?type=${block.type}`}>
               <div className={`flex items-center p-6 rounded-lg text-white ${getBlockColor(block.type)} cursor-pointer hover:opacity-90 transition-opacity`}>
                 <div className="text-3xl font-bold capitalize mr-6">{block.type}</div>

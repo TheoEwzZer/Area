@@ -35,7 +35,6 @@ function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
         >
           <Navbar />
-          <div className="p-4 pt-2"></div>
           {children}
         </body>
       </ClerkProvider>

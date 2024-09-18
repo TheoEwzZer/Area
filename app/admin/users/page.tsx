@@ -1,25 +1,45 @@
-import { User, clerkClient } from "@clerk/nextjs/server";
+"use client";
+
+import { User } from "@clerk/nextjs/server";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ReactElement } from "react";
-import { redirect } from "next/navigation";
-import { isAdmin } from "@/lib/is-admin";
+import { ReactElement, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-async function AdminUserManagement(): Promise<ReactElement> {
-  if (!isAdmin()) {
-    redirect("/");
-  }
-
-  let users: User[] = [];
-
-  try {
-    const userList: { data: User[] } = await clerkClient().users.getUserList();
-    users = userList.data;
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
-  }
+function AdminUserManagement(): ReactElement {
+  const [users, setUsers] = useState<User[]>([]);
+  const router: AppRouterInstance = useRouter();
+  
+  useEffect((): void => {
+    const fetchUsers: () => Promise<void> = async (): Promise<void> => {
+      try {
+        const response = await fetch("/api/admin/users");
+        const data: User[] = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      }
+    };
+    fetchUsers();
+  }, [router]);
+  
+  const handleRoleChange: (userId: string, newRole: string) => Promise<void> = async (userId: string, newRole: string): Promise<void> => {
+    try {
+      await fetch(`/api/admin/users/${userId}/role`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+    } catch (error) {
+      console.error("Failed to change role:", error);
+    }
+  };
 
   return (
     <Card className="m-4">
@@ -35,6 +55,7 @@ async function AdminUserManagement(): Promise<ReactElement> {
               <TableHead>Created At</TableHead>
               <TableHead>Last Active</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Role</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -47,18 +68,38 @@ async function AdminUserManagement(): Promise<ReactElement> {
                       <AvatarFallback>{user.firstName?.charAt(0)}{user.lastName?.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <div>{user.fullName || "N/A"}</div>
+                      <div>
+                        {user.firstName || user.lastName ? `${user.firstName || ""} ${user.lastName || ""}`.trim() : "N/A"}
+                      </div>
+
                       <div className="text-sm text-gray-500">{user.username || "No username"}</div>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{user.primaryEmailAddress?.emailAddress || "N/A"}</TableCell>
+                <TableCell>
+                  {user.emailAddresses?.length > 0 ? user.emailAddresses[0].emailAddress : "N/A"}
+                </TableCell>
+
                 <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>{user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() : "N/A"}</TableCell>
                 <TableCell>
                   {user.banned && <Badge variant="destructive">Banned</Badge>}
                   {user.locked && <Badge>Locked</Badge>}
                   {!user.banned && !user.locked && <Badge>Active</Badge>}
+                </TableCell>
+                <TableCell>
+                  <Select
+                    defaultValue={user.publicMetadata.role as string || "user"}
+                    onValueChange={(value: string): Promise<void> => handleRoleChange(user.id, value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="user">User</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </TableCell>
               </TableRow>
             ))}

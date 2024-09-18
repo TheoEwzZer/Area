@@ -1,12 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { ReactElement, useState, useEffect } from "react";
-import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Menu } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ReactElement, useEffect, useState } from "react";
 
 export function Navbar(): ReactElement | null {
   const pathname: string = usePathname();

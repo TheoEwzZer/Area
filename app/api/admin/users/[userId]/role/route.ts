@@ -1,6 +1,6 @@
 import { isAdmin } from "@/lib/is-admin";
 import { clerkClient } from "@clerk/nextjs/server";
-import { NextResponse, NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   req: NextRequest,

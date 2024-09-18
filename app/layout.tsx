@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-import { ReactNode, ReactElement } from "react";
 import Navbar from "@/components/navbar";
-import { NextFontWithVariable } from "next/dist/compiled/@next/font";
 import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata } from "next";
+import { NextFontWithVariable } from "next/dist/compiled/@next/font";
+import localFont from "next/font/local";
+import { ReactElement, ReactNode } from "react";
+import "./globals.css";
 
 const geistSans: NextFontWithVariable = localFont({
   src: "./fonts/GeistVF.woff",

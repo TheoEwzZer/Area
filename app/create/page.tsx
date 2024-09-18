@@ -1,22 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  Plus,
-  X,
-  HelpCircle,
-  Zap,
-  Check,
-  Search,
-  ArrowLeft,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import Image from "next/image";
 import { Input } from "@/components/ui/input";
+import {
+  ArrowLeft,
+  Check,
+  HelpCircle,
+  Plus,
+  Search,
+  X,
+  Zap,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useState } from "react";
 
-type BlockType = "if" | "then";
+type BlockType = "action" | "reaction";
 
 interface Block {
   type: BlockType;
@@ -28,10 +28,14 @@ interface Block {
 }
 
 const initialBlocks: Block[] = [
-  { type: "if", text: "Choose a trigger", icon: <Zap className="h-6 w-6" /> },
   {
-    type: "then",
-    text: "Choose an action",
+    type: "action",
+    text: "Choose a Action",
+    icon: <Zap className="h-6 w-6" />,
+  },
+  {
+    type: "reaction",
+    text: "Choose an REAction",
     icon: <Check className="h-6 w-6" />,
   },
 ];
@@ -139,9 +143,9 @@ export default function WorkflowBuilder() {
   const addBlock = (type: BlockType) => {
     const newBlock: Block = {
       type,
-      text: type === "if" ? "Choose a trigger" : "Choose an action",
+      text: type === "action" ? "Choose a trigger" : "Choose an action",
       icon:
-        type === "if" ? (
+        type === "action" ? (
           <Zap className="h-6 w-6" />
         ) : (
           <Check className="h-6 w-6" />
@@ -199,7 +203,7 @@ export default function WorkflowBuilder() {
             <span className="sr-only">Home</span>
           </Link>
           <h1 className="w-full text-center text-4xl font-bold">
-            Create your own Workflow
+            Create your own AREA
           </h1>
           <Dialog
             open={dialogOpen}
@@ -246,7 +250,7 @@ export default function WorkflowBuilder() {
                     style={{
                       backgroundColor:
                         block.color ??
-                        (block.type === "if" ? "#EF4444" : "#F59E0B"),
+                        (block.type === "action" ? "#EF4444" : "#F59E0B"),
                     }}
                     onClick={() => setSelectedBlockIndex(index)}
                   >
@@ -342,7 +346,7 @@ export default function WorkflowBuilder() {
                   )}
                 </DialogContent>
               </Dialog>
-              {block.type === "then" && (
+              {block.type === "reaction" && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -361,7 +365,7 @@ export default function WorkflowBuilder() {
             variant="outline"
             size="lg"
             className="rounded-full"
-            onClick={() => addBlock("then")}
+            onClick={() => addBlock("reaction")}
           >
             <Plus className="h-6 w-6" />
             <span className="sr-only">Add block</span>

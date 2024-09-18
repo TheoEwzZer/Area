@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const services = [
   { name: "Discord", color: "#788CFF", image: "/discord.svg" },
@@ -33,7 +34,19 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <main className="flex-1 py-12 px-4 max-w-5xl mx-auto w-full">
-        <h1 className="text-4xl font-bold text-center mb-8">Select your favorite services</h1>
+        <div className="relative flex items-center mb-6">
+          {/* Back Button */}
+          <Link href="/create">
+            <button
+              className="absolute left-0 border border-black text-black font-semibold px-4 py-2 rounded-full transition-colors hover:bg-gray-200"
+              style={{ backgroundColor: "transparent" }}
+            >
+              Cancel
+            </button>
+          </Link>
+          <h1 className="mx-auto text-4xl font-bold">Select your favorite services</h1>
+        </div>
+
         <div className="max-w-md mx-auto mb-8">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
@@ -45,6 +58,7 @@ export default function HomePage() {
             />
           </div>
         </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredServices.map((service) => (
             <Button
@@ -64,8 +78,11 @@ export default function HomePage() {
           ))}
         </div>
       </main>
+
       <footer className="py-6 text-center bg-white border-t">
-        <p className="text-sm text-gray-500">© {new Date().getFullYear()} AREA from Tic & Tac Corporation. All rights reserved.</p>
+        <p className="text-sm text-gray-500">
+          © {new Date().getFullYear()} AREA from Tic & Tac Corporation. All rights reserved.
+        </p>
       </footer>
     </div>
   );

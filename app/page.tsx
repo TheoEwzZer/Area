@@ -68,8 +68,9 @@ export default function WorkflowBuilder() {
             <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
               <h2 className="mb-2 text-lg font-semibold">How to use</h2>
               <p>
-                Create your workflow by adding &quotIf&quot and &quotThen&quot
-                blocks. Click the &quot+&quot button to add a new block.
+                Create your workflow by adding &quot;Action&quot; and
+                &quot;Reaction&quot; blocks. Click the &quot;+&quot; button to
+                add a new block.
               </p>
             </DialogContent>
           </Dialog>

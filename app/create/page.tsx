@@ -223,8 +223,9 @@ export default function WorkflowBuilder() {
                 How to use
               </h2>
               <p className="text-center">
-                Create your workflow by adding &quotIfquot and quotThenquot
-                blocks. Click the quot+quot button to add a new block.
+                Create your workflow by adding &quot;Action&quot; and
+                &quot;Reaction&quot; blocks. Click the &quot;+&quot; button to
+                add a new block.
               </p>
             </DialogContent>
           </Dialog>

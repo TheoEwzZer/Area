@@ -3,15 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  ArrowLeft,
-  Check,
-  HelpCircle,
-  Plus,
-  Search,
-  X,
-  Zap,
-} from "lucide-react";
+import { ArrowLeft, Check, HelpCircle, Search, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { ReactElement, useState } from "react";
@@ -37,12 +29,12 @@ interface Service {
 const initialBlocks: Block[] = [
   {
     type: "action",
-    text: "Choose a Action",
+    text: "Choose an Action",
     icon: <Zap className="h-6 w-6" />,
   },
   {
     type: "reaction",
-    text: "Choose an REAction",
+    text: "Choose a REAction",
     icon: <Check className="h-6 w-6" />,
   },
 ];
@@ -148,19 +140,6 @@ export default function WorkflowBuilder(): ReactElement {
       service.name.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const addBlock: () => void = (): void => {
-    const newBlock: Block = {
-      type: "reaction",
-      text: "Choose an REAction",
-      icon: <Check className="h-6 w-6" />,
-    };
-    setBlocks([...blocks, newBlock]);
-  };
-
-  const removeBlock: (index: number) => void = (index: number): void => {
-    setBlocks(blocks.filter((_: Block, i: number): boolean => i !== index));
-  };
-
   const handleServiceClick: (serviceName: string) => void = (
     serviceName: string
   ): void => {
@@ -237,8 +216,7 @@ export default function WorkflowBuilder(): ReactElement {
               </h2>
               <p className="text-center">
                 Create your workflow by adding &quot;Action&quot; and
-                &quot;Reaction&quot; blocks. Click the &quot;+&quot; button to
-                add a new block.
+                &quot;Reaction&quot; blocks.
               </p>
             </DialogContent>
           </Dialog>
@@ -376,31 +354,9 @@ export default function WorkflowBuilder(): ReactElement {
                     )}
                   </DialogContent>
                 </Dialog>
-                {block.type === "reaction" && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-2 text-white"
-                    onClick={(): void => removeBlock(index)}
-                  >
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Remove block</span>
-                  </Button>
-                )}
               </div>
             )
           )}
-        </div>
-        <div className="mt-8 flex justify-center">
-          <Button
-            variant="outline"
-            size="lg"
-            className="rounded-full"
-            onClick={addBlock}
-          >
-            <Plus className="h-6 w-6" />
-            <span className="sr-only">Add block</span>
-          </Button>
         </div>
         <div className="mt-12">
           <Button className="w-full bg-black py-6 text-lg text-white hover:bg-gray-800">

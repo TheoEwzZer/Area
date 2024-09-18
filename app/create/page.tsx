@@ -140,16 +140,11 @@ export default function WorkflowBuilder() {
     service.name.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const addBlock = (type: BlockType) => {
+  const addBlock = () => {
     const newBlock: Block = {
-      type,
-      text: type === "action" ? "Choose a trigger" : "Choose an action",
-      icon:
-        type === "action" ? (
-          <Zap className="h-6 w-6" />
-        ) : (
-          <Check className="h-6 w-6" />
-        ),
+      type: "reaction",
+      text: "Choose an REAction",
+      icon: <Check className="h-6 w-6" />,
     };
     setBlocks([...blocks, newBlock]);
   };
@@ -196,7 +191,7 @@ export default function WorkflowBuilder() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100">
+    <div className="flex min-h-screen flex-col">
       <div className="mx-auto w-full max-w-4xl px-4 py-8">
         <div className="mb-8 flex items-center justify-between">
           <Link href="/">
@@ -366,7 +361,7 @@ export default function WorkflowBuilder() {
             variant="outline"
             size="lg"
             className="rounded-full"
-            onClick={() => addBlock("reaction")}
+            onClick={addBlock}
           >
             <Plus className="h-6 w-6" />
             <span className="sr-only">Add block</span>

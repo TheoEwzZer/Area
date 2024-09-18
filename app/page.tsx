@@ -16,7 +16,11 @@ interface Block {
 
 const initialBlocks: Block[] = [
   { type: "if", text: "Choose a trigger", icon: <Zap className="h-6 w-6" /> },
-  { type: "then", text: "Choose an action", icon: <Check className="h-6 w-6" /> },
+  {
+    type: "then",
+    text: "Choose an action",
+    icon: <Check className="h-6 w-6" />,
+  },
 ];
 
 export default function WorkflowBuilder() {
@@ -26,7 +30,12 @@ export default function WorkflowBuilder() {
     const newBlock: Block = {
       type,
       text: type === "if" ? "Choose a trigger" : "Choose an action",
-      icon: type === "if" ? <Zap className="h-6 w-6" /> : <Check className="h-6 w-6" />,
+      icon:
+        type === "if" ? (
+          <Zap className="h-6 w-6" />
+        ) : (
+          <Check className="h-6 w-6" />
+        ),
     };
     setBlocks([...blocks, newBlock]);
   };
@@ -40,37 +49,46 @@ export default function WorkflowBuilder() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <div className="w-full max-w-4xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <Link href="/">
-          </Link>
-          <h1 className="text-4xl font-bold text-center w-full">Create your own Workflow</h1>
+    <div className="flex min-h-screen flex-col bg-gray-100">
+      <div className="mx-auto w-full max-w-4xl px-4 py-8">
+        <div className="mb-8 flex items-center justify-between">
+          <Link href="/"></Link>
+          <h1 className="w-full text-center text-4xl font-bold">
+            Create your own Workflow
+          </h1>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button
+                variant="ghost"
+                size="icon"
+              >
                 <HelpCircle className="h-6 w-6" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold mb-2">How to use</h2>
+            <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+              <h2 className="mb-2 text-lg font-semibold">How to use</h2>
               <p>
-                Create your workflow by adding &quotIf&quot and &quotThen&quot blocks. Click the
-                &quot+&quot button to add a new block.
+                Create your workflow by adding &quotIf&quot and &quotThen&quot
+                blocks. Click the &quot+&quot button to add a new block.
               </p>
             </DialogContent>
           </Dialog>
         </div>
         <div className="space-y-8">
           {blocks.map((block, index) => (
-            <div key={index} className="relative w-full">
+            <div
+              key={index}
+              className="relative w-full"
+            >
               <Link href={`/selection?type=${block.type}`}>
                 <div
-                  className={`flex items-center p-6 rounded-lg text-white ${getBlockColor(
+                  className={`flex items-center rounded-lg p-6 text-white ${getBlockColor(
                     block.type
-                  )} cursor-pointer hover:opacity-90 transition-opacity w-full`}
+                  )} w-full cursor-pointer transition-opacity hover:opacity-90`}
                 >
-                  <div className="text-3xl font-bold capitalize mr-6">{block.type}</div>
+                  <div className="mr-6 text-3xl font-bold capitalize">
+                    {block.type}
+                  </div>
                   {block.icon}
                   <div className="ml-6 text-xl">{block.text}</div>
                 </div>
@@ -78,7 +96,7 @@ export default function WorkflowBuilder() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute top-2 right-2 text-white"
+                className="absolute right-2 top-2 text-white"
                 onClick={() => removeBlock(index)}
               >
                 <X className="h-4 w-4" />
@@ -89,17 +107,27 @@ export default function WorkflowBuilder() {
         <div className="mt-8 flex justify-center">
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" size="lg" className="rounded-full">
+              <Button
+                variant="outline"
+                size="lg"
+                className="rounded-full"
+              >
                 <Plus className="h-6 w-6" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold mb-4">Choose block type</h2>
+            <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+              <h2 className="mb-4 text-lg font-semibold">Choose block type</h2>
               <div className="flex justify-around">
-                <Button onClick={() => addBlock("if")} className="bg-red-500 hover:bg-red-600">
+                <Button
+                  onClick={() => addBlock("if")}
+                  className="bg-red-500 hover:bg-red-600"
+                >
                   Add If
                 </Button>
-                <Button onClick={() => addBlock("then")} className="bg-yellow-500 hover:bg-yellow-600">
+                <Button
+                  onClick={() => addBlock("then")}
+                  className="bg-yellow-500 hover:bg-yellow-600"
+                >
                   Add Then
                 </Button>
               </div>
@@ -107,7 +135,7 @@ export default function WorkflowBuilder() {
           </Dialog>
         </div>
         <div className="mt-12">
-          <Button className="w-full bg-black text-white hover:bg-gray-800 text-lg py-6">
+          <Button className="w-full bg-black py-6 text-lg text-white hover:bg-gray-800">
             Save
           </Button>
         </div>

@@ -1,9 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-export async function GET(): Promise<NextResponse<{
-  isAdmin: boolean;
-}>> {
+export async function GET(): Promise<
+  NextResponse<{
+    isAdmin: boolean;
+  }>
+> {
   const { sessionClaims } = auth();
 
   if (sessionClaims?.metadata.role === "admin") {

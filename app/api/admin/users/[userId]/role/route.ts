@@ -5,9 +5,11 @@ import { NextResponse, NextRequest } from "next/server";
 export async function PUT(
   req: NextRequest,
   { params }: { params: { userId: string } }
-): Promise<NextResponse<{
-  detail: string;
-}>> {
+): Promise<
+  NextResponse<{
+    detail: string;
+  }>
+> {
   if (!isAdmin()) {
     return NextResponse.json({ detail: "Unauthorized" }, { status: 401 });
   }
@@ -25,6 +27,9 @@ export async function PUT(
     return NextResponse.json({ detail: "Role updated successfully" });
   } catch (error) {
     console.error("Failed to update user role:", error);
-    return NextResponse.json({ detail: "Failed to update user role" }, { status: 500 });
+    return NextResponse.json(
+      { detail: "Failed to update user role" },
+      { status: 500 }
+    );
   }
 }

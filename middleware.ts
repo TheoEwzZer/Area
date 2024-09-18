@@ -1,34 +1,45 @@
-import { clerkMiddleware, ClerkMiddlewareAuth, createRouteMatcher } from "@clerk/nextjs/server";
+import {
+  clerkMiddleware,
+  ClerkMiddlewareAuth,
+  createRouteMatcher,
+} from "@clerk/nextjs/server";
 import { NextURL } from "next/dist/server/web/next-url";
 import { NextRequest, NextResponse } from "next/server";
 
-const isPublicRoute: (req: NextRequest) => boolean = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
-const isAdminRoute: (req: NextRequest) => boolean = createRouteMatcher(["/admin(.*)"]);
+const isPublicRoute: (req: NextRequest) => boolean = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+]);
+const isAdminRoute: (req: NextRequest) => boolean = createRouteMatcher([
+  "/admin(.*)",
+]);
 
-export default clerkMiddleware((auth: ClerkMiddlewareAuth, request: NextRequest): NextResponse | void => {
-  const url: NextURL = request.nextUrl;
+export default clerkMiddleware(
+  (auth: ClerkMiddlewareAuth, request: NextRequest): NextResponse | void => {
+    const url: NextURL = request.nextUrl;
 
-  if (url.pathname === "/") {
-    if (auth().userId) {
-      url.pathname = "/create";
-      return NextResponse.redirect(url);
-    } else {
-      url.pathname = "/sign-in";
-      return NextResponse.redirect(url);
+    if (url.pathname === "/") {
+      if (auth().userId) {
+        url.pathname = "/create";
+        return NextResponse.redirect(url);
+      } else {
+        url.pathname = "/sign-in";
+        return NextResponse.redirect(url);
+      }
+    }
+
+    if (!isPublicRoute(request)) {
+      auth().protect();
+
+      const isAdmin: boolean = auth().sessionClaims?.metadata.role === "admin";
+
+      if (isAdminRoute(request) && !isAdmin) {
+        url.pathname = "/";
+        return NextResponse.redirect(url);
+      }
     }
   }
-
-  if (!isPublicRoute(request)) {
-    auth().protect();
-
-    const isAdmin: boolean = auth().sessionClaims?.metadata.role === "admin";
-
-    if (isAdminRoute(request) && !isAdmin) {
-      url.pathname = "/";
-      return NextResponse.redirect(url);
-    }
-  }
-});
+);
 
 export const config = {
   matcher: [

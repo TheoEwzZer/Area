@@ -26,12 +26,16 @@ function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>): ReactElement {
   return (
-    <html lang="en" className="h-full">
+    <html
+      lang="en"
+      className="h-full"
+    >
       <ClerkProvider>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+          className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
         >
           <Navbar />
+          <div className="p-4 pt-2"></div>
           {children}
         </body>
       </ClerkProvider>

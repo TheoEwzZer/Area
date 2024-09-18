@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar";
+import SupabaseProvider from "@/providers/supabase-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { NextFontWithVariable } from "next/dist/compiled/@next/font";
@@ -34,8 +35,10 @@ function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
         >
-          <Navbar />
-          {children}
+          <SupabaseProvider>
+            <Navbar />
+            {children}
+          </SupabaseProvider>
         </body>
       </ClerkProvider>
     </html>

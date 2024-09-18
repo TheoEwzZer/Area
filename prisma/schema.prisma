@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Area {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  actionId   Int
+  reactionId Int
+  action     Action   @relation(fields: [actionId], references: [id])
+  reaction   Reaction @relation(fields: [reactionId], references: [id])
+}
+
+model Action {
+  id      Int    @id @default(autoincrement())
+  service String
+  name    String
+  data    Json
+  areas   Area[]
+}
+
+model Reaction {
+  id      Int    @id @default(autoincrement())
+  service String
+  name    String
+  data    Json
+  areas   Area[]
+}

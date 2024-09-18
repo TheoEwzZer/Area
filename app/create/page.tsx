@@ -72,7 +72,6 @@ export default function WorkflowBuilder() {
         i === selectedBlockIndex ? { ...b, service: serviceName, text: serviceName } : b
       );
       setBlocks(updatedBlocks);
-      setDialogOpen(false);
       setSelectedBlockIndex(null);
     }
   };
@@ -163,24 +162,14 @@ export default function WorkflowBuilder() {
           ))}
         </div>
         <div className="mt-8 flex justify-center">
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="lg" className="rounded-full">
-                <Plus className="h-6 w-6" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold text-center mb-4">Choose block type</h2>
-              <div className="flex justify-around">
-                <Button onClick={() => addBlock("if")} className="bg-red-500 hover:bg-red-600">
-                  Add If
-                </Button>
-                <Button onClick={() => addBlock("then")} className="bg-yellow-500 hover:bg-yellow-600">
-                  Add Then
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button
+            variant="outline"
+            size="lg"
+            className="rounded-full"
+            onClick={() => addBlock("then")}
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
         </div>
         <div className="mt-12">
           <Button className="w-full bg-black text-white hover:bg-gray-800 text-lg py-6">

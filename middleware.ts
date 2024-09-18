@@ -3,6 +3,7 @@ import { NextURL } from "next/dist/server/web/next-url";
 import { NextRequest, NextResponse } from "next/server";
 
 const isPublicRoute: (req: NextRequest) => boolean = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
+const isAdminRoute: (req: NextRequest) => boolean = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware((auth: ClerkMiddlewareAuth, request: NextRequest): NextResponse | void => {
   const url: NextURL = request.nextUrl;
@@ -19,6 +20,13 @@ export default clerkMiddleware((auth: ClerkMiddlewareAuth, request: NextRequest)
 
   if (!isPublicRoute(request)) {
     auth().protect();
+
+    const isAdmin: boolean = auth().sessionClaims?.metadata.role === "admin";
+
+    if (isAdminRoute(request) && !isAdmin) {
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
   }
 });
 

@@ -32,3 +32,11 @@ model Reaction {
   data    Json
   areas   Area[]
 }
+
+model Service {
+  id           Int    @id @default(autoincrement())
+  accessToken  String
+  refreshToken String
+  data         Json
+  userId       Int
+}

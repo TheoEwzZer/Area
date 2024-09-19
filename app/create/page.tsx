@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, HelpCircle, Search, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,13 +15,13 @@ interface Block {
   type: BlockType;
   text: string;
   icon: React.ReactNode;
-  service?: string;
+  service?: ServiceType;
   action?: string;
   color?: string;
 }
 
 interface Service {
-  name: string;
+  name: ServiceType;
   color: string;
   image: string;
   actions: string[];
@@ -41,88 +42,38 @@ const initialBlocks: Block[] = [
 
 const services: Service[] = [
   {
-    name: "Discord",
-    color: "#788CFF",
-    image: "/discord.svg",
-    actions: ["Send message", "Create channel", "Add role"],
-  },
-  {
-    name: "Gmail",
-    color: "#EA4335",
-    image: "/gmail.svg",
-    actions: ["Send email", "Create draft", "Add label"],
-  },
-  {
-    name: "Spotify",
-    color: "#1DB954",
-    image: "/spotify.svg",
-    actions: ["Play track", "Create playlist", "Follow artist"],
-  },
-  {
-    name: "Twitch",
-    color: "#9146FF",
-    image: "/twitch.svg",
-    actions: ["Start stream", "Send chat message", "Create clip"],
-  },
-  {
-    name: "Google Calendar",
-    color: "#4285F4",
-    image: "/calendar.svg",
-    actions: ["Create event", "Set reminder", "Delete event"],
-  },
-  {
-    name: "Youtube",
-    color: "#D00000",
-    image: "/youtube.svg",
+    name: "YOUTUBE",
+    color: "#ff0000",
+    image:
+      "https://assets.ifttt.com/images/channels/32/icons/monochrome_large.png",
     actions: ["Upload video", "Create playlist", "Like video"],
   },
   {
-    name: "Deezer",
-    color: "#00C7F2",
-    image: "/deezer.svg",
-    actions: ["Play track", "Create playlist", "Follow artist"],
-  },
-  {
-    name: "OneDrive",
-    color: "#0078D4",
-    image: "/onedrive.svg",
-    actions: ["Upload file", "Create folder", "Share file"],
-  },
-  {
-    name: "Google Drive",
-    color: "#F5E592",
-    image: "/google-drive.svg",
-    actions: ["Upload file", "Create folder", "Share file"],
-  },
-  {
-    name: "Outlook",
-    color: "#0078D4",
+    name: "OUTLOOK",
+    color: "#0371C5",
     image: "/outlook.svg",
     actions: ["Send email", "Create event", "Add contact"],
   },
   {
-    name: "Teams",
-    color: "#6264A7",
-    image: "/teams.svg",
-    actions: ["Send message", "Create meeting", "Add member"],
+    name: "GITHUB",
+    color: "#4078c0",
+    image:
+      "https://assets.ifttt.com/images/channels/2107379463/icons/monochrome_large.png",
+    actions: ["Create repository", "Create issue", "Create pull request"],
   },
   {
-    name: "Weather",
-    color: "#00A5E5",
-    image: "/weather.svg",
-    actions: ["Get forecast", "Set alert", "Get current conditions"],
+    name: "DISCORD",
+    color: "#7289da",
+    image:
+      "https://assets.ifttt.com/images/channels/179823445/icons/monochrome_large.png",
+    actions: ["Send message", "Create channel", "Add role"],
   },
   {
-    name: "Google Translate",
-    color: "#374255",
-    image: "/google-translate.svg",
-    actions: ["Translate text", "Detect language", "Get supported languages"],
-  },
-  {
-    name: "Amazon",
-    color: "#FF9900",
-    image: "/amazon.svg",
-    actions: ["Place order", "Track package", "Add to cart"],
+    name: "GOOGLE_CALENDAR",
+    color: "#2c6efc",
+    image:
+      "https://assets.ifttt.com/images/channels/1396293310/icons/monochrome_large.png",
+    actions: ["Create event", "Set reminder", "Delete event"],
   },
 ];
 
@@ -133,15 +84,17 @@ export default function WorkflowBuilder(): ReactElement {
   );
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [filter, setFilter] = useState("");
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceType | null>(
+    null
+  );
 
   const filteredServices: Service[] = services.filter(
     (service: Service): boolean =>
       service.name.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const handleServiceClick: (serviceName: string) => void = (
-    serviceName: string
+  const handleServiceClick: (serviceName: ServiceType) => void = (
+    serviceName: ServiceType
   ): void => {
     setSelectedService(serviceName);
     if (selectedBlockIndex !== null) {

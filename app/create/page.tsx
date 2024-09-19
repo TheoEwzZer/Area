@@ -7,7 +7,7 @@ import { ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, HelpCircle, Search, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { ReactElement, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 
 type BlockType = "action" | "reaction";
 
@@ -87,6 +87,35 @@ export default function WorkflowBuilder(): ReactElement {
   const [selectedService, setSelectedService] = useState<ServiceType | null>(
     null
   );
+  const [isConnected, setIsConnected] = useState<boolean>(true);
+
+  useEffect((): void => {
+    const checkServiceConnection: () => Promise<void> =
+      async (): Promise<void> => {
+        if (selectedService) {
+          try {
+            const userResponse: Response = await fetch("/api/users/me");
+            const userData = await userResponse.json();
+
+            if (!userResponse.ok) {
+              throw new Error(userData.detail || "Failed to fetch user data");
+            }
+
+            const userId = userData.id;
+
+            const response = await fetch(
+              `/api/check-service-connection/${userId}/${selectedService}`
+            );
+            const data = await response.json();
+            setIsConnected(data.isConnected);
+          } catch (error) {
+            console.error("Error checking service connection:", error);
+          }
+        }
+      };
+
+    checkServiceConnection();
+  }, [selectedService]);
 
   const filteredServices: Service[] = services.filter(
     (service: Service): boolean =>
@@ -223,45 +252,65 @@ export default function WorkflowBuilder(): ReactElement {
                   </DialogTrigger>
                   <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
                     {selectedService ? (
-                      <>
-                        <Button
-                          variant="ghost"
-                          onClick={(): void => setSelectedService(null)}
-                          className="mb-4"
-                        >
-                          <ArrowLeft className="mr-2 h-4 w-4" />
-                          Back to services
-                        </Button>
-                        <h2 className="mb-4 text-center text-lg font-semibold">
-                          Choose an action for {selectedService}
-                        </h2>
-                        <div className="grid grid-cols-1 gap-4">
-                          {services
-                            .find(
-                              (s: Service): boolean =>
-                                s.name === selectedService
-                            )
-                            ?.actions.map(
-                              (action: string): ReactElement => (
-                                <Button
-                                  key={action}
-                                  className="h-12 items-center justify-start rounded-md px-4 text-white"
-                                  style={{
-                                    backgroundColor: services.find(
-                                      (s: Service): boolean =>
-                                        s.name === selectedService
-                                    )?.color,
-                                  }}
-                                  onClick={(): void =>
-                                    handleActionClick(action)
-                                  }
-                                >
-                                  <span>{action}</span>
-                                </Button>
+                      isConnected ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            onClick={(): void => setSelectedService(null)}
+                            className="mb-4"
+                          >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to services
+                          </Button>
+                          <h2 className="mb-4 text-center text-lg font-semibold">
+                            Choose an action for {selectedService}
+                          </h2>
+                          <div className="grid grid-cols-1 gap-4">
+                            {services
+                              .find(
+                                (s: Service): boolean =>
+                                  s.name === selectedService
                               )
-                            )}
+                              ?.actions.map(
+                                (action: string): ReactElement => (
+                                  <Button
+                                    key={action}
+                                    className="h-12 items-center justify-start rounded-md px-4 text-white"
+                                    style={{
+                                      backgroundColor: services.find(
+                                        (s: Service): boolean =>
+                                          s.name === selectedService
+                                      )?.color,
+                                    }}
+                                    onClick={(): void =>
+                                      handleActionClick(action)
+                                    }
+                                  >
+                                    <span>{action}</span>
+                                  </Button>
+                                )
+                              )}
+                          </div>
+                        </>
+                      ) : (
+                        <div>
+                          <h2 className="mb-4 text-center text-lg font-semibold">
+                            Connect to {selectedService}
+                          </h2>
+                          <p className="text-center">
+                            You need to connect to {selectedService} to use its
+                            actions.
+                          </p>
+                          <Button
+                            className="mt-4 w-full"
+                            onClick={(): void => {
+                              // Logic to connect to service
+                            }}
+                          >
+                            Connect to {selectedService}
+                          </Button>
                         </div>
-                      </>
+                      )
                     ) : (
                       <>
                         <h2 className="mb-4 text-center text-lg font-semibold">

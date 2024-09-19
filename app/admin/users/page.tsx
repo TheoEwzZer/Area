@@ -30,7 +30,7 @@ function AdminUserManagement(): ReactElement {
   useEffect((): void => {
     const fetchUsers: () => Promise<void> = async (): Promise<void> => {
       try {
-        const response = await fetch("/api/admin/users");
+        const response = await fetch("/api/users");
         const data: User[] = await response.json();
         setUsers(data);
       } catch (error) {
@@ -48,7 +48,7 @@ function AdminUserManagement(): ReactElement {
     newRole: string
   ): Promise<void> => {
     try {
-      await fetch(`/api/admin/users/${userId}/role`, {
+      await fetch(`/api/users/${userId}/role`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

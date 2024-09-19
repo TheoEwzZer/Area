@@ -1,31 +1,16 @@
 "use client";
 
+import { Block, Service } from "@/app/create/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ServiceType } from "@prisma/client";
-import { ArrowLeft, Check, HelpCircle, Search, Zap } from "lucide-react";
-import Image from "next/image";
+import { ArrowLeft, Check, Search, Zap } from "lucide-react";
 import Link from "next/link";
-import React, { ReactElement, useEffect, useState } from "react";
-
-type BlockType = "action" | "reaction";
-
-interface Block {
-  type: BlockType;
-  text: string;
-  icon: React.ReactNode;
-  service?: ServiceType;
-  action?: string;
-  color?: string;
-}
-
-interface Service {
-  name: ServiceType;
-  color: string;
-  image: string;
-  actions: string[];
-}
+import { ChangeEvent, ReactElement, useEffect, useState } from "react";
+import { ActionList } from "./_components/action-list";
+import { BlockItem } from "./_components/block-item";
+import { ServiceList } from "./_components/service-list";
 
 const initialBlocks: Block[] = [
   {
@@ -82,7 +67,6 @@ export default function WorkflowBuilder(): ReactElement {
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(
     null
   );
-  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const [filter, setFilter] = useState("");
   const [selectedService, setSelectedService] = useState<ServiceType | null>(
     null
@@ -179,29 +163,6 @@ export default function WorkflowBuilder(): ReactElement {
           <h1 className="w-full text-center text-4xl font-bold">
             Create your own AREA
           </h1>
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-              >
-                <HelpCircle className="h-6 w-6" />
-                <span className="sr-only">Help</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
-              <h2 className="mb-2 text-center text-lg font-semibold">
-                How to use
-              </h2>
-              <p className="text-center">
-                Create your workflow by adding &quot;Action&quot; and
-                &quot;Reaction&quot; blocks.
-              </p>
-            </DialogContent>
-          </Dialog>
         </div>
         <div className="space-y-8">
           {blocks.map(
@@ -220,35 +181,11 @@ export default function WorkflowBuilder(): ReactElement {
                   }}
                 >
                   <DialogTrigger asChild>
-                    <div
-                      className="flex w-full cursor-pointer items-center rounded-lg p-6 text-white transition-opacity hover:opacity-90"
-                      style={{
-                        backgroundColor:
-                          block.color ??
-                          (block.type === "action" ? "#EF4444" : "#F59E0B"),
-                      }}
+                    <BlockItem
+                      block={block}
                       onClick={(): void => setSelectedBlockIndex(index)}
-                    >
-                      <div className="mr-6 text-3xl font-bold capitalize">
-                        {block.type}
-                      </div>
-                      {block.service ? (
-                        <Image
-                          src={
-                            services.find(
-                              (s: Service): boolean => s.name === block.service
-                            )?.image ?? ""
-                          }
-                          alt={block.service}
-                          width={50}
-                          height={50}
-                          className="mr-4"
-                        />
-                      ) : (
-                        block.icon
-                      )}
-                      <div className="ml-2 text-xl">{block.text}</div>
-                    </div>
+                      services={services}
+                    />
                   </DialogTrigger>
                   <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
                     {selectedService ? (
@@ -265,32 +202,15 @@ export default function WorkflowBuilder(): ReactElement {
                           <h2 className="mb-4 text-center text-lg font-semibold">
                             Choose an action for {selectedService}
                           </h2>
-                          <div className="grid grid-cols-1 gap-4">
-                            {services
-                              .find(
+                          <ActionList
+                            service={
+                              services.find(
                                 (s: Service): boolean =>
                                   s.name === selectedService
-                              )
-                              ?.actions.map(
-                                (action: string): ReactElement => (
-                                  <Button
-                                    key={action}
-                                    className="h-12 items-center justify-start rounded-md px-4 text-white"
-                                    style={{
-                                      backgroundColor: services.find(
-                                        (s: Service): boolean =>
-                                          s.name === selectedService
-                                      )?.color,
-                                    }}
-                                    onClick={(): void =>
-                                      handleActionClick(action)
-                                    }
-                                  >
-                                    <span>{action}</span>
-                                  </Button>
-                                )
-                              )}
-                          </div>
+                              )!
+                            }
+                            onActionClick={handleActionClick}
+                          />
                         </>
                       ) : (
                         <div>
@@ -324,36 +244,15 @@ export default function WorkflowBuilder(): ReactElement {
                               className="bg-white pl-8"
                               value={filter}
                               onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>
+                                e: ChangeEvent<HTMLInputElement>
                               ): void => setFilter(e.target.value)}
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          {filteredServices.map(
-                            (service: Service): ReactElement => (
-                              <Button
-                                key={service.name}
-                                className="h-16 items-center justify-center rounded-md px-4 text-white"
-                                style={{ backgroundColor: service.color }}
-                                onClick={(): void =>
-                                  handleServiceClick(service.name)
-                                }
-                              >
-                                <Image
-                                  src={service.image}
-                                  alt={service.name}
-                                  width={32}
-                                  height={32}
-                                  className="mr-2"
-                                />
-                                <span className="bold">
-                                  {service.name.replace(/_/g, " ")}
-                                </span>
-                              </Button>
-                            )
-                          )}
-                        </div>
+                        <ServiceList
+                          services={filteredServices}
+                          onServiceClick={handleServiceClick}
+                        />
                       </>
                     )}
                   </DialogContent>

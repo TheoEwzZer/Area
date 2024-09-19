@@ -298,7 +298,9 @@ export default function WorkflowBuilder(): ReactElement {
                                   height={32}
                                   className="mr-2"
                                 />
-                                <span className="bold">{service.name}</span>
+                                <span className="bold">
+                                  {service.name.replace(/_/g, " ")}
+                                </span>
                               </Button>
                             )
                           )}

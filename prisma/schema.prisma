@@ -8,6 +8,14 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum ServiceType {
+  YOUTUBE
+  OUTLOOK
+  GITHUB
+  DISCORD
+  GOOGLE_CALENDAR
+}
+
 model Area {
   id         Int      @id @default(autoincrement())
   userId     String
@@ -18,25 +26,25 @@ model Area {
 }
 
 model Action {
-  id      Int    @id @default(autoincrement())
-  service String
-  name    String
-  data    Json
-  areas   Area[]
+  id          Int         @id @default(autoincrement())
+  service     ServiceType
+  name        String
+  description String
+  areas       Area[]
 }
 
 model Reaction {
-  id      Int    @id @default(autoincrement())
-  service String
-  name    String
-  data    Json
-  areas   Area[]
+  id          Int         @id @default(autoincrement())
+  service     ServiceType
+  name        String
+  description String
+  areas       Area[]
 }
 
 model Service {
-  id           Int    @id @default(autoincrement())
+  id           Int         @id @default(autoincrement())
   accessToken  String
   refreshToken String
-  data         Json
   userId       Int
+  service      ServiceType
 }

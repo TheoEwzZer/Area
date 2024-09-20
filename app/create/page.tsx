@@ -153,6 +153,37 @@ export default function WorkflowBuilder(): ReactElement {
     }
   };
 
+  const handleConnectService: () => Promise<void> = async (): Promise<void> => {
+    try {
+      const userResponse: Response = await fetch("/api/users/me");
+      const userData = await userResponse.json();
+
+      if (!userResponse.ok) {
+        throw new Error(userData.detail || "Failed to fetch user data");
+      }
+
+      const userId = userData.id;
+
+      const response = await fetch("/api/connect-service", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, service: selectedService }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to connect to service");
+      }
+
+      setIsConnected(true);
+    } catch (error) {
+      console.error("Error connecting to service:", error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto w-full max-w-4xl px-4 py-8">
@@ -223,9 +254,7 @@ export default function WorkflowBuilder(): ReactElement {
                           </p>
                           <Button
                             className="mt-4 w-full"
-                            onClick={(): void => {
-                              // Logic to connect to service
-                            }}
+                            onClick={handleConnectService}
                           >
                             Connect to {selectedService}
                           </Button>

@@ -48,3 +48,21 @@ model Service {
   userId       String
   service      ServiceType
 }
+
+model ServiceInfo {
+  id          Int             @id @default(autoincrement())
+  name        String
+  type        ServiceType     @unique
+  color       String
+  image_url   String
+  description String
+  actions     ServiceAction[]
+}
+
+model ServiceAction {
+  id            Int         @id @default(autoincrement())
+  name          String
+  description   String
+  serviceInfo   ServiceInfo @relation(fields: [serviceInfoId], references: [id])
+  serviceInfoId Int
+}

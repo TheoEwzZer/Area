@@ -9,10 +9,3 @@ export interface Block {
   action?: string;
   color?: string;
 }
-
-export interface Service {
-  name: ServiceType;
-  color: string;
-  image: string;
-  actions: string[];
-}

@@ -1,15 +1,16 @@
 "use client";
 
-import { Block, Service } from "@/app/create/types";
+import { Block } from "@/app/create/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ServiceType } from "@prisma/client";
+import { ServiceAction, ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, Search, Zap } from "lucide-react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, ReactElement, useEffect, useState } from "react";
+import { ServiceInfoWithActions } from "../api/services/route";
 import { ActionList } from "./_components/action-list";
 import { BlockItem } from "./_components/block-item";
 import { ServiceList } from "./_components/service-list";
@@ -27,43 +28,6 @@ const initialBlocks: Block[] = [
   },
 ];
 
-const services: Service[] = [
-  {
-    name: "YOUTUBE",
-    color: "#ff0000",
-    image:
-      "https://assets.ifttt.com/images/channels/32/icons/monochrome_large.png",
-    actions: ["Upload video", "Create playlist", "Like video"],
-  },
-  {
-    name: "OUTLOOK",
-    color: "#0371C5",
-    image: "/outlook.svg",
-    actions: ["Send email", "Create event", "Add contact"],
-  },
-  {
-    name: "GITHUB",
-    color: "#4078c0",
-    image:
-      "https://assets.ifttt.com/images/channels/2107379463/icons/monochrome_large.png",
-    actions: ["Create repository", "Create issue", "Create pull request"],
-  },
-  {
-    name: "DISCORD",
-    color: "#7289da",
-    image:
-      "https://assets.ifttt.com/images/channels/179823445/icons/monochrome_large.png",
-    actions: ["Send message", "Create channel", "Add role"],
-  },
-  {
-    name: "GOOGLE_CALENDAR",
-    color: "#2c6efc",
-    image:
-      "https://assets.ifttt.com/images/channels/1396293310/icons/monochrome_large.png",
-    actions: ["Create event", "Set reminder", "Delete event"],
-  },
-];
-
 export default function WorkflowBuilder(): ReactElement {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(
@@ -74,7 +38,25 @@ export default function WorkflowBuilder(): ReactElement {
     null
   );
   const [isConnected, setIsConnected] = useState<boolean>(true);
+  const [services, setServices] = useState<ServiceInfoWithActions[]>([]);
   const router: AppRouterInstance = useRouter();
+
+  useEffect((): void => {
+    const fetchServices: () => Promise<void> = async (): Promise<void> => {
+      try {
+        const response = await fetch("/api/services");
+        if (!response.ok) {
+          throw new Error("Failed to fetch services");
+        }
+        const data: ServiceInfoWithActions[] = await response.json();
+        setServices(data);
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   useEffect((): void => {
     const checkServiceConnection: () => Promise<void> =
@@ -104,8 +86,8 @@ export default function WorkflowBuilder(): ReactElement {
     checkServiceConnection();
   }, [selectedService]);
 
-  const filteredServices: Service[] = services.filter(
-    (service: Service): boolean =>
+  const filteredServices: ServiceInfoWithActions[] = services.filter(
+    (service: ServiceInfoWithActions): boolean =>
       service.name.toLowerCase().includes(filter.toLowerCase())
   );
 
@@ -114,8 +96,8 @@ export default function WorkflowBuilder(): ReactElement {
   ): void => {
     setSelectedService(serviceName);
     if (selectedBlockIndex !== null) {
-      const service: Service | undefined = services.find(
-        (s: Service): boolean => s.name === serviceName
+      const service: ServiceInfoWithActions | undefined = services.find(
+        (s: ServiceInfoWithActions): boolean => s.name === serviceName
       );
       if (service) {
         const updatedBlocks: Block[] = blocks.map(
@@ -129,12 +111,12 @@ export default function WorkflowBuilder(): ReactElement {
     }
   };
 
-  const handleActionClick: (action: string) => void = (
-    action: string
+  const handleActionClick: (action: ServiceAction) => void = (
+    action: ServiceAction
   ): void => {
     if (selectedBlockIndex !== null && selectedService !== null) {
-      const service: Service | undefined = services.find(
-        (s: Service): boolean => s.name === selectedService
+      const service: ServiceInfoWithActions | undefined = services.find(
+        (s: ServiceInfoWithActions): boolean => s.name === selectedService
       );
       if (service) {
         const updatedBlocks: Block[] = blocks.map(
@@ -143,8 +125,8 @@ export default function WorkflowBuilder(): ReactElement {
               ? {
                   ...b,
                   service: selectedService,
-                  action,
-                  text: action,
+                  action: action.name,
+                  text: action.name,
                   color: service.color,
                 }
               : b
@@ -222,7 +204,7 @@ export default function WorkflowBuilder(): ReactElement {
                           <ActionList
                             service={
                               services.find(
-                                (s: Service): boolean =>
+                                (s: ServiceInfoWithActions): boolean =>
                                   s.name === selectedService
                               )!
                             }

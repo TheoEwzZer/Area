@@ -1,11 +1,12 @@
-import { Block, Service } from "@/app/create/types";
+import { ServiceInfoWithActions } from "@/app/api/services/route";
 import Image from "next/image";
 import { ReactElement } from "react";
+import { Block } from "../types";
 
 interface BlockItemProps {
   block: Block;
   onClick: () => void;
-  services: Service[];
+  services: ServiceInfoWithActions[];
 }
 
 export const BlockItem: ({
@@ -29,8 +30,9 @@ export const BlockItem: ({
     {block.service ? (
       <Image
         src={
-          services.find((s: Service): boolean => s.name === block.service)
-            ?.image ?? ""
+          services.find(
+            (s: ServiceInfoWithActions): boolean => s.name === block.service
+          )?.image_url ?? ""
         }
         alt={block.service}
         width={50}

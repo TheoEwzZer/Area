@@ -6,7 +6,9 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, Search, Zap } from "lucide-react";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { ActionList } from "./_components/action-list";
 import { BlockItem } from "./_components/block-item";
@@ -72,6 +74,7 @@ export default function WorkflowBuilder(): ReactElement {
     null
   );
   const [isConnected, setIsConnected] = useState<boolean>(true);
+  const router: AppRouterInstance = useRouter();
 
   useEffect((): void => {
     const checkServiceConnection: () => Promise<void> =
@@ -161,24 +164,7 @@ export default function WorkflowBuilder(): ReactElement {
       if (!userResponse.ok) {
         throw new Error(userData.detail || "Failed to fetch user data");
       }
-
-      const userId = userData.id;
-
-      const response = await fetch("/api/connect-service", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId, service: selectedService }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to connect to service");
-      }
-
-      setIsConnected(true);
+      router.push(`/api/oauth2/authorize?service=${selectedService}`);
     } catch (error) {
       console.error("Error connecting to service:", error);
     }

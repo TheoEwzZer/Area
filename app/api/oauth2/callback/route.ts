@@ -74,7 +74,9 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
       });
     }
 
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/create`);
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/my-services`
+    );
   } catch (error) {
     console.error("Error exchanging code for tokens:", error);
     return NextResponse.json(

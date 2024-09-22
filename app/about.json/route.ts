@@ -29,7 +29,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     server: {
       current_time: currentTime,
       services: services.map((service) => ({
-        name: service.name,
+        name: service.type,
         actions: service.actions.map((action) => ({
           name: action.name,
           description: action.description,

@@ -20,19 +20,19 @@ export const ServiceList: ({
     {services.map(
       (service: ServiceInfoWithActions): ReactElement => (
         <Button
-          key={service.name}
+          key={service.type.replace(/_/g, " ")}
           className="h-16 items-center justify-center rounded-md px-4 text-white"
           style={{ backgroundColor: service.color }}
           onClick={(): void => onServiceClick(service.type)}
         >
           <Image
             src={service.image_url}
-            alt={service.name}
+            alt={service.type.replace(/_/g, " ")}
             width={32}
             height={32}
             className="mr-2"
           />
-          <span className="bold">{service.name.replace(/_/g, " ")}</span>
+          <span className="bold">{service.type.replace(/_/g, " ")}</span>
         </Button>
       )
     )}

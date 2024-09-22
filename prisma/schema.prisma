@@ -51,7 +51,6 @@ model Service {
 
 model ServiceInfo {
   id          Int               @id @default(autoincrement())
-  name        String
   type        ServiceType       @unique
   color       String
   image_url   String

@@ -88,16 +88,16 @@ export default function WorkflowBuilder(): ReactElement {
 
   const filteredServices: ServiceInfoWithActions[] = services.filter(
     (service: ServiceInfoWithActions): boolean =>
-      service.name.toLowerCase().includes(filter.toLowerCase())
+      service.type.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const handleServiceClick: (serviceName: ServiceType) => void = (
+  const handleServiceClick: (serviceType: ServiceType) => void = (
     serviceName: ServiceType
   ): void => {
     setSelectedService(serviceName);
     if (selectedBlockIndex !== null) {
       const service: ServiceInfoWithActions | undefined = services.find(
-        (s: ServiceInfoWithActions): boolean => s.name === serviceName
+        (s: ServiceInfoWithActions): boolean => s.type === serviceName
       );
       if (service) {
         const updatedBlocks: Block[] = blocks.map(
@@ -116,7 +116,7 @@ export default function WorkflowBuilder(): ReactElement {
   ): void => {
     if (selectedBlockIndex !== null && selectedService !== null) {
       const service: ServiceInfoWithActions | undefined = services.find(
-        (s: ServiceInfoWithActions): boolean => s.name === selectedService
+        (s: ServiceInfoWithActions): boolean => s.type === selectedService
       );
       if (service) {
         const updatedBlocks: Block[] = blocks.map(
@@ -205,7 +205,7 @@ export default function WorkflowBuilder(): ReactElement {
                             service={
                               services.find(
                                 (s: ServiceInfoWithActions): boolean =>
-                                  s.name === selectedService
+                                  s.type === selectedService
                               )!
                             }
                             onActionClick={handleActionClick}

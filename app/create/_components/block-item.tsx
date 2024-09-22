@@ -31,7 +31,7 @@ export const BlockItem: ({
       <Image
         src={
           services.find(
-            (s: ServiceInfoWithActions): boolean => s.name === block.service
+            (s: ServiceInfoWithActions): boolean => s.type === block.service
           )?.image_url ?? ""
         }
         alt={block.service}

@@ -70,8 +70,8 @@ export default function ServiceConnector(): ReactElement {
     fetchServices();
   }, []);
 
-  const handleConnectService: (service: string) => Promise<void> = async (
-    service: string
+  const handleConnectService: (service: ServiceType) => Promise<void> = async (
+    service: ServiceType
   ): Promise<void> => {
     try {
       const userResponse: Response = await fetch("/api/users/me");
@@ -81,7 +81,7 @@ export default function ServiceConnector(): ReactElement {
         throw new Error(userData.detail || "Failed to fetch user data");
       }
 
-      router.push(`/api/oauth2/authorize?service=${service}`);
+      router.push(`/api/oauth2/authorize/${service}`);
     } catch (error) {
       console.error("Error connecting to service:", error);
     }

@@ -4,11 +4,9 @@ import { Block } from "@/app/create/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ServiceAction, ServiceType } from "@prisma/client";
+import { Service, ServiceAction, ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, Search, Zap } from "lucide-react";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { ServiceInfoWithActions } from "../api/services/route";
 import { ActionList } from "./_components/action-list";
@@ -37,9 +35,8 @@ export default function WorkflowBuilder(): ReactElement {
   const [selectedService, setSelectedService] = useState<ServiceType | null>(
     null
   );
-  const [isConnected, setIsConnected] = useState<boolean>(true);
   const [services, setServices] = useState<ServiceInfoWithActions[]>([]);
-  const router: AppRouterInstance = useRouter();
+  const [connectedServices, setConnectedServices] = useState<ServiceType[]>([]);
 
   useEffect((): void => {
     const fetchServices: () => Promise<void> = async (): Promise<void> => {
@@ -55,39 +52,34 @@ export default function WorkflowBuilder(): ReactElement {
       }
     };
 
-    fetchServices();
-  }, []);
-
-  useEffect((): void => {
-    const checkServiceConnection: () => Promise<void> =
+    const fetchConnectedServices: () => Promise<void> =
       async (): Promise<void> => {
-        if (selectedService) {
-          try {
-            const userResponse: Response = await fetch("/api/users/me");
-            const userData = await userResponse.json();
+        try {
+          const userResponse: Response = await fetch("/api/users/me");
+          const userData = await userResponse.json();
+          const userId = userData.id;
 
-            if (!userResponse.ok) {
-              throw new Error(userData.detail || "Failed to fetch user data");
-            }
-
-            const userId = userData.id;
-
-            const response = await fetch(
-              `/api/check-service-connection/${userId}/${selectedService}`
-            );
-            const data = await response.json();
-            setIsConnected(data.isConnected);
-          } catch (error) {
-            console.error("Error checking service connection:", error);
+          const response = await fetch(`/api/users/${userId}/services`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch connected services");
           }
+          const data = await response.json();
+          const connectedServiceTypes = data.services.map(
+            (service: Service): ServiceType => service.service
+          );
+          setConnectedServices(connectedServiceTypes);
+        } catch (error) {
+          console.error("Error fetching connected services:", error);
         }
       };
 
-    checkServiceConnection();
-  }, [selectedService]);
+    fetchServices();
+    fetchConnectedServices();
+  }, []);
 
   const filteredServices: ServiceInfoWithActions[] = services.filter(
     (service: ServiceInfoWithActions): boolean =>
+      connectedServices.includes(service.type) &&
       service.type.toLowerCase().includes(filter.toLowerCase())
   );
 
@@ -138,20 +130,6 @@ export default function WorkflowBuilder(): ReactElement {
     }
   };
 
-  const handleConnectService: () => Promise<void> = async (): Promise<void> => {
-    try {
-      const userResponse: Response = await fetch("/api/users/me");
-      const userData = await userResponse.json();
-
-      if (!userResponse.ok) {
-        throw new Error(userData.detail || "Failed to fetch user data");
-      }
-      router.push(`/api/oauth2/authorize?service=${selectedService}`);
-    } catch (error) {
-      console.error("Error connecting to service:", error);
-    }
-  };
-
   return (
     <div className="flex min-h-screen flex-col">
       <div className="mx-auto w-full max-w-4xl px-4 py-8">
@@ -188,51 +166,44 @@ export default function WorkflowBuilder(): ReactElement {
                   </DialogTrigger>
                   <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
                     {selectedService ? (
-                      isConnected ? (
-                        <>
-                          <Button
-                            variant="ghost"
-                            onClick={(): void => setSelectedService(null)}
-                            className="mb-4"
-                          >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to services
-                          </Button>
-                          <h2 className="mb-4 text-center text-lg font-semibold">
-                            Choose an action for {selectedService}
-                          </h2>
-                          <ActionList
-                            service={
-                              services.find(
-                                (s: ServiceInfoWithActions): boolean =>
-                                  s.type === selectedService
-                              )!
-                            }
-                            onActionClick={handleActionClick}
-                          />
-                        </>
-                      ) : (
-                        <div>
-                          <h2 className="mb-4 text-center text-lg font-semibold">
-                            Connect to {selectedService}
-                          </h2>
-                          <p className="text-center">
-                            You need to connect to {selectedService} to use its
-                            actions.
-                          </p>
-                          <Button
-                            className="mt-4 w-full"
-                            onClick={handleConnectService}
-                          >
-                            Connect to {selectedService}
-                          </Button>
-                        </div>
-                      )
+                      <>
+                        <Button
+                          variant="ghost"
+                          onClick={(): void => setSelectedService(null)}
+                          className="mb-4"
+                        >
+                          <ArrowLeft className="mr-2 h-4 w-4" />
+                          Back to services
+                        </Button>
+                        <h2 className="mb-4 text-center text-lg font-semibold">
+                          Choose an action for {selectedService}
+                        </h2>
+                        <ActionList
+                          service={
+                            services.find(
+                              (s: ServiceInfoWithActions): boolean =>
+                                s.type === selectedService
+                            )!
+                          }
+                          onActionClick={handleActionClick}
+                        />
+                      </>
                     ) : (
                       <>
                         <h2 className="mb-4 text-center text-lg font-semibold">
                           Choose service for this block
                         </h2>
+                        <h3 className="mb-4 text-center text-sm text-gray-500">
+                          You can add more services to the list by connecting
+                          them on the{" "}
+                          <Link
+                            href="/my-services"
+                            className="text-blue-500 underline"
+                          >
+                            My Services
+                          </Link>{" "}
+                          page.
+                        </h3>
                         <div className="mx-auto mb-8 max-w-md">
                           <div className="relative">
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />

@@ -10,7 +10,7 @@ datasource db {
 
 enum ServiceType {
   YOUTUBE
-  OUTLOOK
+  GMAIL
   GITHUB
   DISCORD
   GOOGLE_CALENDAR
@@ -44,7 +44,7 @@ model Reaction {
 model Service {
   id           Int         @id @default(autoincrement())
   accessToken  String
-  refreshToken String
+  refreshToken String?
   userId       String
   service      ServiceType
 }

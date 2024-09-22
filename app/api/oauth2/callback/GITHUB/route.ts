@@ -5,33 +5,27 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
   const { searchParams } = req.nextUrl;
-  const service: string | null = searchParams.get("service");
   const code: string | null = searchParams.get("code");
 
-  if (!code || !service || service !== "GOOGLE_CALENDAR") {
-    return NextResponse.json(
-      { detail: "Missing code or invalid service" },
-      { status: 400 }
-    );
+  if (!code) {
+    return NextResponse.json({ detail: "Missing code" }, { status: 400 });
   }
 
-  const tokenUrl = "https://oauth2.googleapis.com/token";
-  const clientId: string = process.env.GOOGLE_CLIENT_ID!;
-  const clientSecret: string = process.env.GOOGLE_CLIENT_SECRET!;
-  const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/oauth2/callback?service=GOOGLE_CALENDAR`;
+  const tokenUrl = "https://github.com/login/oauth/access_token";
+  const clientId: string = process.env.GITHUB_CLIENT_ID!;
+  const clientSecret: string = process.env.GITHUB_CLIENT_SECRET!;
 
   try {
     const response = await fetch(tokenUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
-      body: new URLSearchParams({
+      body: JSON.stringify({
         client_id: clientId,
         client_secret: clientSecret,
-        grant_type: "authorization_code",
-        code: code as string,
-        redirect_uri: redirectUri,
+        code: code,
       }),
     });
 
@@ -40,7 +34,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
     }
 
     const data = await response.json();
-    const { access_token, refresh_token } = data;
+    const { access_token } = data;
 
     const user: User | null = await currentUser();
     if (!user) {
@@ -51,7 +45,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
     const existingService: Service | null = await db.service.findFirst({
       where: {
         userId,
-        service: service as ServiceType,
+        service: ServiceType.GITHUB,
       },
     });
 
@@ -60,16 +54,14 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
         where: { id: existingService.id },
         data: {
           accessToken: access_token,
-          refreshToken: refresh_token,
         },
       });
     } else {
       await db.service.create({
         data: {
           userId,
-          service: service as ServiceType,
+          service: ServiceType.GITHUB,
           accessToken: access_token,
-          refreshToken: refresh_token,
         },
       });
     }
@@ -78,9 +70,9 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
       `${process.env.NEXT_PUBLIC_BASE_URL}/my-services`
     );
   } catch (error) {
-    console.error("Error exchanging code for tokens:", error);
+    console.error("Error exchanging code for token:", error);
     return NextResponse.json(
-      { detail: "Failed to exchange code for tokens" },
+      { detail: "Failed to exchange code for token" },
       { status: 500 }
     );
   }

@@ -28,11 +28,10 @@ import { ServiceInfoWithActions } from "../api/services/route";
 
 export default function ServiceConnector(): ReactElement {
   const [services, setServices] = useState<ServiceInfoWithActions[]>([]);
-  const [connectedServices, setConnectedServices] = useState<string[]>([]);
+  const [connectedServices, setConnectedServices] = useState<ServiceType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [serviceToDisconnect, setServiceToDisconnect] = useState<string | null>(
-    null
-  );
+  const [serviceToDisconnect, setServiceToDisconnect] =
+    useState<ServiceType | null>(null);
   const router: AppRouterInstance = useRouter();
 
   useEffect((): void => {
@@ -88,8 +87,8 @@ export default function ServiceConnector(): ReactElement {
     }
   };
 
-  const handleDisconnectService: (service: string) => void = (
-    service: string
+  const handleDisconnectService: (service: ServiceType) => void = (
+    service: ServiceType
   ): void => {
     setServiceToDisconnect(service);
     setIsModalOpen(true);
@@ -121,9 +120,9 @@ export default function ServiceConnector(): ReactElement {
           throw new Error("Failed to disconnect service");
         }
 
-        setConnectedServices((prev: string[]): string[] =>
+        setConnectedServices((prev: ServiceType[]): ServiceType[] =>
           prev.filter(
-            (service: string): boolean => service !== serviceToDisconnect
+            (service: ServiceType): boolean => service !== serviceToDisconnect
           )
         );
         setIsModalOpen(false);

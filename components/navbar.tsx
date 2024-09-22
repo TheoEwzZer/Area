@@ -45,7 +45,10 @@ export function Navbar(): ReactElement | null {
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left">
+        <SheetContent
+          side="left"
+          className="bg-white"
+        >
           <nav className="grid gap-6 text-lg font-medium">
             <Link
               href="/create"
@@ -58,6 +61,12 @@ export function Navbar(): ReactElement | null {
               className="hover:text-foreground"
             >
               My Applets
+            </Link>
+            <Link
+              href="/my-services"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              My Services
             </Link>
             <Link
               href="/create"
@@ -83,6 +92,12 @@ export function Navbar(): ReactElement | null {
             className="whitespace-nowrap text-foreground transition-colors hover:text-foreground"
           >
             My Applets
+          </Link>
+          <Link
+            href="/my-services"
+            className="whitespace-nowrap text-foreground transition-colors hover:text-foreground"
+          >
+            My Services
           </Link>
           <Link
             href="/create"

@@ -2,13 +2,13 @@
 
 import { Block } from "@/app/create/types";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Service, ServiceAction, ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, Search, Zap } from "lucide-react";
 import Link from "next/link";
 import { ChangeEvent, ReactElement, useEffect, useState } from "react";
-import { ServiceInfoWithActions } from "../api/services/route";
+import { ServiceInfoWithActionsAndReactions } from "../about.json/route";
 import { ActionList } from "./_components/action-list";
 import { BlockItem } from "./_components/block-item";
 import { ServiceList } from "./_components/service-list";
@@ -28,15 +28,17 @@ const initialBlocks: Block[] = [
 
 export default function WorkflowBuilder(): ReactElement {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
-  const [selectedBlockIndex, setSelectedBlockIndex] = useState<number | null>(
-    null
-  );
+  const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [filter, setFilter] = useState("");
   const [selectedService, setSelectedService] = useState<ServiceType | null>(
     null
   );
-  const [services, setServices] = useState<ServiceInfoWithActions[]>([]);
+  const [services, setServices] = useState<
+    ServiceInfoWithActionsAndReactions[]
+  >([]);
   const [connectedServices, setConnectedServices] = useState<ServiceType[]>([]);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState<boolean>(false);
+  const [isActionModalOpen, setIsActionModalOpen] = useState<boolean>(false);
 
   useEffect((): void => {
     const fetchServices: () => Promise<void> = async (): Promise<void> => {
@@ -45,7 +47,8 @@ export default function WorkflowBuilder(): ReactElement {
         if (!response.ok) {
           throw new Error("Failed to fetch services");
         }
-        const data: ServiceInfoWithActions[] = await response.json();
+        const data: ServiceInfoWithActionsAndReactions[] =
+          await response.json();
         setServices(data);
       } catch (error) {
         console.error("Error fetching services:", error);
@@ -77,43 +80,39 @@ export default function WorkflowBuilder(): ReactElement {
     fetchConnectedServices();
   }, []);
 
-  const filteredServices: ServiceInfoWithActions[] = services.filter(
-    (service: ServiceInfoWithActions): boolean =>
-      connectedServices.includes(service.type) &&
-      service.type.toLowerCase().includes(filter.toLowerCase())
-  );
+  const filteredServices: ServiceInfoWithActionsAndReactions[] =
+    services.filter(
+      (service: ServiceInfoWithActionsAndReactions): boolean =>
+        connectedServices.includes(service.type) &&
+        service.type.toLowerCase().includes(filter.toLowerCase())
+    );
+
+  const handleBlockClick: (block: Block) => void = (block: Block): void => {
+    setSelectedBlock(block);
+    setIsServiceModalOpen(true);
+  };
 
   const handleServiceClick: (serviceType: ServiceType) => void = (
-    serviceName: ServiceType
+    serviceType: ServiceType
   ): void => {
-    setSelectedService(serviceName);
-    if (selectedBlockIndex !== null) {
-      const service: ServiceInfoWithActions | undefined = services.find(
-        (s: ServiceInfoWithActions): boolean => s.type === serviceName
-      );
-      if (service) {
-        const updatedBlocks: Block[] = blocks.map(
-          (b: Block, i: number): Block =>
-            i === selectedBlockIndex
-              ? { ...b, service: serviceName, color: service.color }
-              : b
-        );
-        setBlocks(updatedBlocks);
-      }
-    }
+    setSelectedService(serviceType);
+    setIsServiceModalOpen(false);
+    setIsActionModalOpen(true);
   };
 
   const handleActionClick: (action: ServiceAction) => void = (
     action: ServiceAction
   ): void => {
-    if (selectedBlockIndex !== null && selectedService !== null) {
-      const service: ServiceInfoWithActions | undefined = services.find(
-        (s: ServiceInfoWithActions): boolean => s.type === selectedService
-      );
+    if (selectedBlock !== null && selectedService !== null) {
+      const service: ServiceInfoWithActionsAndReactions | undefined =
+        services.find(
+          (s: ServiceInfoWithActionsAndReactions): boolean =>
+            s.type === selectedService
+        );
       if (service) {
         const updatedBlocks: Block[] = blocks.map(
-          (b: Block, i: number): Block =>
-            i === selectedBlockIndex
+          (b: Block): Block =>
+            b === selectedBlock
               ? {
                   ...b,
                   service: selectedService,
@@ -124,8 +123,9 @@ export default function WorkflowBuilder(): ReactElement {
               : b
         );
         setBlocks(updatedBlocks);
-        setSelectedBlockIndex(null);
+        setSelectedBlock(null);
         setSelectedService(null);
+        setIsActionModalOpen(false);
       }
     }
   };
@@ -148,83 +148,11 @@ export default function WorkflowBuilder(): ReactElement {
                 key={index}
                 className="relative w-full"
               >
-                <Dialog
-                  open={selectedBlockIndex === index}
-                  onOpenChange={(open: boolean): void => {
-                    if (!open) {
-                      setSelectedBlockIndex(null);
-                      setSelectedService(null);
-                    }
-                  }}
-                >
-                  <DialogTrigger asChild>
-                    <BlockItem
-                      block={block}
-                      onClick={(): void => setSelectedBlockIndex(index)}
-                      services={services}
-                    />
-                  </DialogTrigger>
-                  <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
-                    {selectedService ? (
-                      <>
-                        <Button
-                          variant="ghost"
-                          onClick={(): void => setSelectedService(null)}
-                          className="mb-4"
-                        >
-                          <ArrowLeft className="mr-2 h-4 w-4" />
-                          Back to services
-                        </Button>
-                        <h2 className="mb-4 text-center text-lg font-semibold">
-                          Choose an action for {selectedService}
-                        </h2>
-                        <ActionList
-                          service={
-                            services.find(
-                              (s: ServiceInfoWithActions): boolean =>
-                                s.type === selectedService
-                            )!
-                          }
-                          onActionClick={handleActionClick}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <h2 className="mb-4 text-center text-lg font-semibold">
-                          Choose service for this block
-                        </h2>
-                        <h3 className="mb-4 text-center text-sm text-gray-500">
-                          You can add more services to the list by connecting
-                          them on the{" "}
-                          <Link
-                            href="/my-services"
-                            className="text-blue-500 underline"
-                          >
-                            My Services
-                          </Link>{" "}
-                          page.
-                        </h3>
-                        <div className="mx-auto mb-8 max-w-md">
-                          <div className="relative">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                            <Input
-                              placeholder="Filter services"
-                              className="bg-white pl-8"
-                              value={filter}
-                              onChange={(
-                                e: ChangeEvent<HTMLInputElement>
-                              ): void => setFilter(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <ServiceList
-                          services={filteredServices}
-                          onServiceClick={handleServiceClick}
-                        />
-                      </>
-                    )}
-                  </DialogContent>
-                </Dialog>
+                <BlockItem
+                  block={block}
+                  onClick={(): void => handleBlockClick(block)}
+                  services={services}
+                />
               </div>
             )
           )}
@@ -235,6 +163,76 @@ export default function WorkflowBuilder(): ReactElement {
           </Button>
         </div>
       </div>
+      <Dialog
+        open={isServiceModalOpen}
+        onOpenChange={setIsServiceModalOpen}
+      >
+        <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            Choose service for this block
+          </h2>
+          <h3 className="mb-4 text-center text-sm text-gray-500">
+            You can add more services to the list by connecting them on the{" "}
+            <Link
+              href="/my-services"
+              className="text-blue-500 underline"
+            >
+              My Services
+            </Link>{" "}
+            page.
+          </h3>
+          <div className="mx-auto mb-8 max-w-md">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Filter services"
+                className="bg-white pl-8"
+                value={filter}
+                onChange={(e: ChangeEvent<HTMLInputElement>): void =>
+                  setFilter(e.target.value)
+                }
+              />
+            </div>
+          </div>
+          <ServiceList
+            services={filteredServices}
+            onServiceClick={handleServiceClick}
+          />
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={isActionModalOpen}
+        onOpenChange={setIsActionModalOpen}
+      >
+        <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+          <Button
+            variant="ghost"
+            onClick={(): void => {
+              setIsActionModalOpen(false);
+              setIsServiceModalOpen(true);
+            }}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to services
+          </Button>
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            Choose an {selectedBlock?.type} for {selectedService}
+          </h2>
+          {selectedService && selectedBlock && (
+            <ActionList
+              service={
+                services.find(
+                  (s: ServiceInfoWithActionsAndReactions): boolean =>
+                    s.type === selectedService
+                )!
+              }
+              blockType={selectedBlock.type}
+              onActionClick={handleActionClick}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

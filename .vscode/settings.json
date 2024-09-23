@@ -5,13 +5,5 @@
     "source.fixAll": "always"
   },
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "editor.formatOnSave": true,
-  "emeraldwalk.runonsave": {
-    "commands": [
-      {
-        "match": ".*",
-        "cmd": "npx prettier --write ."
-      }
-    ]
-  }
+  "editor.formatOnSave": true
 }

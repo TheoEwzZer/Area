@@ -1,20 +1,18 @@
+import { ServiceInfoWithActionsAndReactions } from "@/app/about.json/route";
 import { db } from "@/lib/db";
-import { ServiceAction, ServiceInfo } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-export type ServiceInfoWithActions = {
-  actions: ServiceAction[];
-} & ServiceInfo;
-
 export async function GET(): Promise<
-  NextResponse<ServiceInfoWithActions[]> | undefined
+  NextResponse<ServiceInfoWithActionsAndReactions[]> | undefined
 > {
   try {
-    const services: ServiceInfoWithActions[] = await db.serviceInfo.findMany({
-      include: {
-        actions: true,
-      },
-    });
+    const services: ServiceInfoWithActionsAndReactions[] =
+      await db.serviceInfo.findMany({
+        include: {
+          actions: true,
+          reactions: true,
+        },
+      });
 
     return NextResponse.json(services);
   } catch (error) {

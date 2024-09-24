@@ -45,7 +45,7 @@ export async function DELETE(
       detail: string;
     }>
   | NextResponse<{
-      message: string;
+      detail: string;
     }>
 > {
   if (!params || !params.userId || !params.service) {
@@ -70,7 +70,7 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({ message: "Service disconnected successfully" });
+    return NextResponse.json({ detail: "Service disconnected successfully" });
   } catch (error) {
     console.error("Error in DELETE function:", error);
     return NextResponse.json(

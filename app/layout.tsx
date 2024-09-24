@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar";
+import { Toaster } from "@/components/ui/toaster";
 import SupabaseProvider from "@/providers/supabase-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
@@ -39,6 +40,7 @@ function RootLayout({
             <Navbar />
             {children}
           </SupabaseProvider>
+          <Toaster />
         </body>
       </ClerkProvider>
     </html>

@@ -1,6 +1,7 @@
 import { getDiscordChannels } from "@/lib/discord";
 import { NextRequest, NextResponse } from "next/server";
 import { handleDiscordAction } from "./_actions/discordActions";
+import { handleGithubAction } from "./_actions/githubActions";
 import { handleGoogleCalendarAction } from "./_actions/googleCalendarActions";
 
 export async function GET(req: NextRequest): Promise<NextResponse<any>> {
@@ -35,6 +36,8 @@ export async function GET(req: NextRequest): Promise<NextResponse<any>> {
         return handleDiscordAction(action);
       case "GOOGLE_CALENDAR":
         return handleGoogleCalendarAction(action);
+      case "GITHUB":
+        return handleGithubAction(action);
       default:
         return NextResponse.json(
           { detail: "Invalid service" },

@@ -324,7 +324,8 @@ export default function WorkflowBuilder(): ReactElement {
             Back to services
           </Button>
           <h2 className="mb-4 text-center text-lg font-semibold">
-            Choose an {selectedBlock?.type} for {selectedService}
+            Choose an {selectedBlock?.type} for{" "}
+            {selectedService?.replace(/_/g, " ")}
           </h2>
           {isLoading ? (
             <div className="flex items-center justify-center">

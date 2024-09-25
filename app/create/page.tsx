@@ -350,7 +350,7 @@ export default function WorkflowBuilder(): ReactElement {
             Back to actions
           </Button>
           <h2 className="mb-4 text-center text-lg font-semibold">
-            Set parameters
+            {actionParameters?.actionName}
           </h2>
           {actionParameters && (
             <ParameterForm

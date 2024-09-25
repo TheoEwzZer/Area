@@ -4,6 +4,7 @@ import {
   getDiscordAccessToken,
   getUserGuilds,
 } from "@/lib/discord";
+import { Option } from "@/types/globals";
 import { NextResponse } from "next/server";
 
 export async function handleDiscordAction(
@@ -28,10 +29,12 @@ export async function handleDiscordAction(
             name: "guild",
             label: "Select Discord Server",
             type: "select",
-            options: commonGuilds.map((guild: any) => ({
-              value: guild.id,
-              label: guild.name,
-            })),
+            options: commonGuilds.map(
+              (guild: any): Option => ({
+                value: guild.id,
+                label: guild.name,
+              })
+            ),
           },
           {
             name: "channel",
@@ -50,10 +53,12 @@ export async function handleDiscordAction(
             name: "guild",
             label: "Select Discord Server",
             type: "select",
-            options: commonGuilds.map((guild: any) => ({
-              value: guild.id,
-              label: guild.name,
-            })),
+            options: commonGuilds.map(
+              (guild: any): Option => ({
+                value: guild.id,
+                label: guild.name,
+              })
+            ),
           },
           {
             name: "channel",
@@ -77,10 +82,12 @@ export async function handleDiscordAction(
             name: "guild",
             label: "Select Discord Server",
             type: "select",
-            options: commonGuilds.map((guild: any) => ({
-              value: guild.id,
-              label: guild.name,
-            })),
+            options: commonGuilds.map(
+              (guild: any): Option => ({
+                value: guild.id,
+                label: guild.name,
+              })
+            ),
           },
           {
             name: "channel",

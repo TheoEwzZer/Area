@@ -149,7 +149,9 @@ export default function WorkflowBuilder(): ReactElement {
     services.filter(
       (service: ServiceInfoWithActionsAndReactions): boolean =>
         connectedServices.includes(service.type) &&
-        service.type.toLowerCase().includes(filter.toLowerCase())
+        service.type.toLowerCase().includes(filter.toLowerCase()) &&
+        ((selectedBlock?.type === "action" && service.actions.length > 0) ||
+          (selectedBlock?.type === "reaction" && service.reactions.length > 0))
     );
 
   const handleBlockClick: (block: Block) => void = (block: Block): void => {
@@ -269,7 +271,7 @@ export default function WorkflowBuilder(): ReactElement {
       >
         <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
           <h2 className="mb-4 text-center text-lg font-semibold">
-            Choose service for this block
+            Choose service for this {selectedBlock?.type}
           </h2>
           <h3 className="mb-4 text-center text-sm text-gray-500">
             You can add more services to the list by connecting them on the{" "}

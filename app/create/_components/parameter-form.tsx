@@ -69,7 +69,7 @@ export default function ParameterForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8"
+        className="space-y-4"
       >
         {parameters.map(
           (param: Parameter): ReactElement => (
@@ -78,7 +78,7 @@ export default function ParameterForm({
               name={param.name}
               control={form.control}
               render={({ field }) => (
-                <FormItem className="space-y-2">
+                <FormItem className="space-y-1">
                   <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
                   {param.type === "select" ? (
                     <FormControl>

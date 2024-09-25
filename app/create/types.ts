@@ -10,4 +10,5 @@ export interface Block {
   service?: ServiceType;
   action?: string;
   color?: string;
+  parameters?: Record<string, string>;
 }

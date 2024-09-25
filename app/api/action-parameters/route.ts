@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { handleDiscordAction } from "./_actions/discordActions";
 import { handleGithubAction } from "./_actions/githubActions";
 import { handleGoogleCalendarAction } from "./_actions/googleCalendarActions";
+import { handleYoutubeAction } from "./_actions/youtubeActions";
 
 export async function GET(req: NextRequest): Promise<NextResponse<any>> {
   const { searchParams } = req.nextUrl;
@@ -38,6 +39,8 @@ export async function GET(req: NextRequest): Promise<NextResponse<any>> {
         return handleGoogleCalendarAction(action);
       case "GITHUB":
         return handleGithubAction(action);
+      case "YOUTUBE":
+        return handleYoutubeAction(action);
       default:
         return NextResponse.json(
           { detail: "Invalid service" },

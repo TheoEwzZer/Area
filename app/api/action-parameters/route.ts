@@ -2,6 +2,7 @@ import { getDiscordChannels } from "@/lib/discord";
 import { NextRequest, NextResponse } from "next/server";
 import { handleDiscordAction } from "./_actions/discordActions";
 import { handleGithubAction } from "./_actions/githubActions";
+import { handleGmailAction } from "./_actions/gmailActions";
 import { handleGoogleCalendarAction } from "./_actions/googleCalendarActions";
 import { handleYoutubeAction } from "./_actions/youtubeActions";
 
@@ -41,6 +42,8 @@ export async function GET(req: NextRequest): Promise<NextResponse<any>> {
         return handleGithubAction(action);
       case "YOUTUBE":
         return handleYoutubeAction(action);
+      case "GMAIL":
+        return handleGmailAction(action);
       default:
         return NextResponse.json(
           { detail: "Invalid service" },

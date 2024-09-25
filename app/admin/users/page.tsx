@@ -99,10 +99,6 @@ function AdminUserManagement(): ReactElement {
                             ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
                             : "N/A"}
                         </div>
-
-                        <div className="text-sm text-gray-500">
-                          {user.username || "No username"}
-                        </div>
                       </div>
                     </div>
                   </TableCell>

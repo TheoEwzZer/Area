@@ -4,6 +4,7 @@ import { Block } from "@/app/create/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import { Service, ServiceAction, ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, Search, Zap } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +12,7 @@ import { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { ServiceInfoWithActionsAndReactions } from "../about.json/route";
 import { ActionList } from "./_components/action-list";
 import { BlockItem } from "./_components/block-item";
+import ParameterForm from "./_components/parameter-form";
 import { ServiceList } from "./_components/service-list";
 
 const initialBlocks: Block[] = [
@@ -26,6 +28,11 @@ const initialBlocks: Block[] = [
   },
 ];
 
+interface Parameter {
+  actionName: string;
+  parameters: any[];
+}
+
 export default function WorkflowBuilder(): ReactElement {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
@@ -39,6 +46,64 @@ export default function WorkflowBuilder(): ReactElement {
   const [connectedServices, setConnectedServices] = useState<ServiceType[]>([]);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState<boolean>(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState<boolean>(false);
+  const [actionParameters, setActionParameters] = useState<Parameter | null>(
+    null
+  );
+  const [isParameterModalOpen, setIsParameterModalOpen] =
+    useState<boolean>(false);
+  const { toast } = useToast();
+
+  const saveArea: () => Promise<void> = async (): Promise<void> => {
+    const action: Block | undefined = blocks.find(
+      (block: Block): boolean => block.type === "action"
+    );
+    const reaction: Block | undefined = blocks.find(
+      (block: Block): boolean => block.type === "reaction"
+    );
+
+    if (!action?.action || !reaction?.action) {
+      toast({
+        title: "Error",
+        description:
+          "Please select both an action and a reaction before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/areas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          actionService: action.service,
+          actionName: action.action,
+          reactionService: reaction.service,
+          reactionName: reaction.action,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save area");
+      }
+
+      toast({
+        title: "Success",
+        description: "Your AREA has been saved successfully!",
+      });
+
+      setBlocks(initialBlocks);
+    } catch (error) {
+      console.error("Error saving area:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save your AREA. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect((): void => {
     const fetchServices: () => Promise<void> = async (): Promise<void> => {
@@ -100,10 +165,40 @@ export default function WorkflowBuilder(): ReactElement {
     setIsActionModalOpen(true);
   };
 
-  const handleActionClick: (action: ServiceAction) => void = (
+  const handleActionClick: (action: ServiceAction) => Promise<void> = async (
     action: ServiceAction
-  ): void => {
+  ): Promise<void> => {
     if (selectedBlock !== null && selectedService !== null) {
+      try {
+        const response = await fetch(
+          `/api/action-parameters?service=${selectedService}&action=${action.name}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch action parameters");
+        }
+        const data = await response.json();
+        setActionParameters(data);
+        setIsActionModalOpen(false);
+        setIsParameterModalOpen(true);
+      } catch (error) {
+        console.error("Error fetching action parameters:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch action parameters. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleParameterSubmit: (parameters: Record<string, string>) => void = (
+    parameters: Record<string, string>
+  ): void => {
+    if (
+      selectedBlock !== null &&
+      selectedService !== null &&
+      actionParameters !== null
+    ) {
       const service: ServiceInfoWithActionsAndReactions | undefined =
         services.find(
           (s: ServiceInfoWithActionsAndReactions): boolean =>
@@ -116,22 +211,24 @@ export default function WorkflowBuilder(): ReactElement {
               ? {
                   ...b,
                   service: selectedService,
-                  action: action.name,
-                  text: action.name,
+                  action: actionParameters.actionName,
+                  text: actionParameters.actionName,
                   color: service.color,
+                  parameters: parameters,
                 }
               : b
         );
         setBlocks(updatedBlocks);
         setSelectedBlock(null);
         setSelectedService(null);
-        setIsActionModalOpen(false);
+        setActionParameters(null);
+        setIsParameterModalOpen(false);
       }
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-col">
       <div className="mx-auto w-full max-w-4xl px-4 py-8">
         <div className="mb-8 flex items-center justify-between">
           <Link href="/">
@@ -158,7 +255,10 @@ export default function WorkflowBuilder(): ReactElement {
           )}
         </div>
         <div className="mt-12">
-          <Button className="w-full bg-black py-6 text-lg text-white hover:bg-gray-800">
+          <Button
+            className="w-full bg-black py-6 text-lg text-white hover:bg-gray-800"
+            onClick={saveArea}
+          >
             Save
           </Button>
         </div>
@@ -229,6 +329,33 @@ export default function WorkflowBuilder(): ReactElement {
               }
               blockType={selectedBlock.type}
               onActionClick={handleActionClick}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={isParameterModalOpen}
+        onOpenChange={setIsParameterModalOpen}
+      >
+        <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+          <Button
+            variant="ghost"
+            onClick={(): void => {
+              setIsParameterModalOpen(false);
+              setIsActionModalOpen(true);
+            }}
+            className="mb-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to actions
+          </Button>
+          <h2 className="mb-4 text-center text-lg font-semibold">
+            Set parameters
+          </h2>
+          {actionParameters && (
+            <ParameterForm
+              parameters={actionParameters.parameters}
+              onSubmit={handleParameterSubmit}
             />
           )}
         </DialogContent>

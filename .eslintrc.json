@@ -26,6 +26,7 @@
     "semi": ["error", "always"],
     "eol-last": ["error", "always"],
     "@typescript-eslint/no-require-imports": "off",
-    "@typescript-eslint/ban-types": "off"
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   }
 }

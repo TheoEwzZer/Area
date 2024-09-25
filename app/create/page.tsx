@@ -1,6 +1,7 @@
 "use client";
 
 import { Block } from "@/app/create/types";
+import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ export default function WorkflowBuilder(): ReactElement {
   );
   const [isParameterModalOpen, setIsParameterModalOpen] =
     useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
 
   const saveArea: () => Promise<void> = async (): Promise<void> => {
@@ -171,6 +173,7 @@ export default function WorkflowBuilder(): ReactElement {
     action: ServiceAction
   ): Promise<void> => {
     if (selectedBlock !== null && selectedService !== null) {
+      setIsLoading(true);
       try {
         const response = await fetch(
           `/api/action-parameters?service=${selectedService}&action=${action.name}`
@@ -189,6 +192,8 @@ export default function WorkflowBuilder(): ReactElement {
           description: "Failed to fetch action parameters. Please try again.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -321,17 +326,24 @@ export default function WorkflowBuilder(): ReactElement {
           <h2 className="mb-4 text-center text-lg font-semibold">
             Choose an {selectedBlock?.type} for {selectedService}
           </h2>
-          {selectedService && selectedBlock && (
-            <ActionList
-              service={
-                services.find(
-                  (s: ServiceInfoWithActionsAndReactions): boolean =>
-                    s.type === selectedService
-                )!
-              }
-              blockType={selectedBlock.type}
-              onActionClick={handleActionClick}
-            />
+          {isLoading ? (
+            <div className="flex items-center justify-center">
+              <Loader />
+            </div>
+          ) : (
+            selectedService &&
+            selectedBlock && (
+              <ActionList
+                service={
+                  services.find(
+                    (s: ServiceInfoWithActionsAndReactions): boolean =>
+                      s.type === selectedService
+                  )!
+                }
+                blockType={selectedBlock.type}
+                onActionClick={handleActionClick}
+              />
+            )
           )}
         </DialogContent>
       </Dialog>

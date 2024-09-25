@@ -1,13 +1,8 @@
-import {
-  findCommonGuilds,
-  getBotGuilds,
-  getDiscordAccessToken,
-  getDiscordChannels,
-  getUserGuilds,
-} from "@/lib/discord";
+import { getDiscordChannels } from "@/lib/discord";
 import { NextRequest, NextResponse } from "next/server";
+import { handleDiscordAction } from "./_actions/discordActions";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest): Promise<NextResponse<any>> {
   const { searchParams } = req.nextUrl;
   const service: string | null = searchParams.get("service");
   const action: string | null = searchParams.get("action");
@@ -35,53 +30,14 @@ export async function GET(req: NextRequest) {
 
   try {
     switch (service) {
-      case "DISCORD": {
-        switch (action) {
-          case "New pinned message in channel": {
-            const userAccessToken: string = await getDiscordAccessToken();
-            const userGuilds: any = await getUserGuilds(userAccessToken);
-            const botGuilds: any = await getBotGuilds();
-            const commonGuilds: any[] = findCommonGuilds(userGuilds, botGuilds);
-
-            if (commonGuilds.length === 0) {
-              return NextResponse.json(
-                { detail: "No guilds found" },
-                { status: 400 }
-              );
-            }
-
-            return NextResponse.json({
-              actionName: action,
-              parameters: [
-                {
-                  name: "guild",
-                  label: "Select Discord Server",
-                  type: "select",
-                  options: commonGuilds.map((guild: any) => ({
-                    value: guild.id,
-                    label: guild.name,
-                  })),
-                },
-                {
-                  name: "channel",
-                  label: "Select Channel",
-                  type: "select",
-                  options: [],
-                },
-              ],
-            });
-          }
-          // Add more Discord actions here
-        }
-        break;
-      }
-      // Add more services here
+      case "DISCORD":
+        return handleDiscordAction(action);
+      default:
+        return NextResponse.json(
+          { detail: "Invalid service" },
+          { status: 400 }
+        );
     }
-
-    return NextResponse.json(
-      { detail: "Invalid service or action" },
-      { status: 400 }
-    );
   } catch (error) {
     console.error("Error fetching action parameters:", error);
     return NextResponse.json(

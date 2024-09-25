@@ -1,4 +1,4 @@
-import { ServiceInfoWithActions } from "@/app/api/services/route";
+import { ServiceInfoWithActionsAndReactions } from "@/app/about.json/route";
 import Image from "next/image";
 import { ReactElement } from "react";
 import { Block } from "../types";
@@ -6,7 +6,7 @@ import { Block } from "../types";
 interface BlockItemProps {
   block: Block;
   onClick: () => void;
-  services: ServiceInfoWithActions[];
+  services: ServiceInfoWithActionsAndReactions[];
 }
 
 export const BlockItem: ({
@@ -31,7 +31,8 @@ export const BlockItem: ({
       <Image
         src={
           services.find(
-            (s: ServiceInfoWithActions): boolean => s.type === block.service
+            (s: ServiceInfoWithActionsAndReactions): boolean =>
+              s.type === block.service
           )?.image_url ?? ""
         }
         alt={block.service}

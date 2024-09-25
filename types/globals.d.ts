@@ -9,3 +9,8 @@ declare global {
     };
   }
 }
+
+export interface Option {
+  value: string;
+  label: string;
+}

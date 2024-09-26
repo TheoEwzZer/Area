@@ -24,10 +24,12 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ReactElement, useEffect, useState } from "react";
-import { ServiceInfoWithActions } from "../api/services/route";
+import { ServiceInfoWithActionsAndReactions } from "../about.json/route";
 
 export default function ServiceConnector(): ReactElement {
-  const [services, setServices] = useState<ServiceInfoWithActions[]>([]);
+  const [services, setServices] = useState<
+    ServiceInfoWithActionsAndReactions[]
+  >([]);
   const [connectedServices, setConnectedServices] = useState<ServiceType[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [serviceToDisconnect, setServiceToDisconnect] =
@@ -45,7 +47,7 @@ export default function ServiceConnector(): ReactElement {
         }
         const userId: string = userData.id;
         const servicesResponse: Response = await fetch("/api/services");
-        const servicesData: ServiceInfoWithActions[] =
+        const servicesData: ServiceInfoWithActionsAndReactions[] =
           await servicesResponse.json();
         setServices(servicesData);
 
@@ -139,7 +141,7 @@ export default function ServiceConnector(): ReactElement {
       </h1>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {services.map(
-          (service: ServiceInfoWithActions): ReactElement => (
+          (service: ServiceInfoWithActionsAndReactions): ReactElement => (
             <Card
               key={service.id}
               className="flex flex-col"

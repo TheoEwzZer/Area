@@ -1,11 +1,6 @@
 import { db } from "@/lib/db";
 import { currentUser, User } from "@clerk/nextjs/server";
-import {
-  Area,
-  ServiceAction,
-  ServiceInfo,
-  ServiceReaction,
-} from "@prisma/client";
+import { Action, Area, Reaction, ServiceInfo } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest): Promise<
@@ -14,8 +9,14 @@ export async function POST(req: NextRequest): Promise<
     }>
   | NextResponse<Area>
 > {
-  const { actionService, actionName, reactionService, reactionName } =
-    await req.json();
+  const {
+    actionService,
+    actionName,
+    actionParameters,
+    reactionService,
+    reactionName,
+    reactionParameters,
+  } = await req.json();
   const user: User | null = await currentUser();
 
   try {
@@ -36,21 +37,19 @@ export async function POST(req: NextRequest): Promise<
       );
     }
 
-    const action: ServiceAction | null = await db.serviceAction.findFirst({
+    const action: Action | null = await db.action.findFirst({
       where: {
         serviceInfoId: actionServiceInfo.id,
         name: actionName,
       },
     });
 
-    const reaction: ServiceReaction | null = await db.serviceReaction.findFirst(
-      {
-        where: {
-          serviceInfoId: reactionServiceInfo.id,
-          name: reactionName,
-        },
-      }
-    );
+    const reaction: Reaction | null = await db.reaction.findFirst({
+      where: {
+        serviceInfoId: reactionServiceInfo.id,
+        name: reactionName,
+      },
+    });
 
     if (!action || !reaction) {
       return NextResponse.json(
@@ -65,6 +64,8 @@ export async function POST(req: NextRequest): Promise<
           userId: user.id,
           actionId: action.id,
           reactionId: reaction.id,
+          actionData: actionParameters,
+          reactionData: reactionParameters,
         },
       });
       return NextResponse.json(newArea);

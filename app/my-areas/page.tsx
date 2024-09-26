@@ -159,7 +159,9 @@ export default function MyApplets(): ReactElement {
             <Card
               key={area.id}
               className="relative cursor-pointer transition-all hover:shadow-lg"
-              style={{ backgroundColor: area.actionServiceInfo.color }}
+              style={{
+                background: `linear-gradient(to right, ${area.actionServiceInfo.color}, ${area.reactionServiceInfo.color})`,
+              }}
               onClick={(): void => handleCardClick(area)}
             >
               <div className="absolute left-6 top-6 flex gap-2">

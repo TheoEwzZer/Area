@@ -1,15 +1,10 @@
 import { db } from "@/lib/db";
-import {
-  ServiceAction,
-  ServiceInfo,
-  ServiceReaction,
-  ServiceType,
-} from "@prisma/client";
+import { Action, Reaction, ServiceInfo, ServiceType } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 export type ServiceInfoWithActionsAndReactions = {
-  actions: ServiceAction[];
-  reactions: ServiceReaction[];
+  actions: Action[];
+  reactions: Reaction[];
 } & ServiceInfo;
 
 export async function GET(request: Request): Promise<NextResponse> {
@@ -50,15 +45,13 @@ export async function GET(request: Request): Promise<NextResponse> {
         } => ({
           name: service.type,
           actions: service.actions.map(
-            (action: ServiceAction): { name: string; description: string } => ({
+            (action: Action): { name: string; description: string } => ({
               name: action.name,
               description: action.description,
             })
           ),
           reactions: service.reactions.map(
-            (
-              reaction: ServiceReaction
-            ): { name: string; description: string } => ({
+            (reaction: Reaction): { name: string; description: string } => ({
               name: reaction.name,
               description: reaction.description,
             })

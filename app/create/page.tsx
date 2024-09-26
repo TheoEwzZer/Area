@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Service, ServiceAction, ServiceType } from "@prisma/client";
+import { Action, Service, ServiceType } from "@prisma/client";
 import { ArrowLeft, Check, Search, Zap } from "lucide-react";
 import Link from "next/link";
 import { ChangeEvent, ReactElement, useEffect, useState } from "react";
@@ -82,8 +82,10 @@ export default function WorkflowBuilder(): ReactElement {
         body: JSON.stringify({
           actionService: action.service,
           actionName: action.action,
+          actionParameters: action.parameters,
           reactionService: reaction.service,
           reactionName: reaction.action,
+          reactionParameters: reaction.parameters,
         }),
       });
 
@@ -169,8 +171,8 @@ export default function WorkflowBuilder(): ReactElement {
     setIsActionModalOpen(true);
   };
 
-  const handleActionClick: (action: ServiceAction) => Promise<void> = async (
-    action: ServiceAction
+  const handleActionClick: (action: Action) => Promise<void> = async (
+    action: Action
   ): Promise<void> => {
     if (selectedBlock !== null && selectedService !== null) {
       setIsLoading(true);

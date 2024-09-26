@@ -17,28 +17,14 @@ enum ServiceType {
 }
 
 model Area {
-  id         Int      @id @default(autoincrement())
-  userId     String
-  actionId   Int
-  reactionId Int
-  action     Action   @relation(fields: [actionId], references: [id])
-  reaction   Reaction @relation(fields: [reactionId], references: [id])
-}
-
-model Action {
-  id          Int         @id @default(autoincrement())
-  service     ServiceType
-  name        String
-  description String
-  areas       Area[]
-}
-
-model Reaction {
-  id          Int         @id @default(autoincrement())
-  service     ServiceType
-  name        String
-  description String
-  areas       Area[]
+  id           Int      @id @default(autoincrement())
+  userId       String
+  actionId     Int
+  reactionId   Int
+  action       Action   @relation(fields: [actionId], references: [id])
+  reaction     Reaction @relation(fields: [reactionId], references: [id])
+  actionData   Json
+  reactionData Json
 }
 
 model Service {
@@ -50,27 +36,31 @@ model Service {
 }
 
 model ServiceInfo {
-  id          Int               @id @default(autoincrement())
-  type        ServiceType       @unique
+  id          Int         @id @default(autoincrement())
+  type        ServiceType @unique
   color       String
   image_url   String
   description String
-  actions     ServiceAction[]
-  reactions   ServiceReaction[]
+  actions     Action[]
+  reactions   Reaction[]
 }
 
-model ServiceAction {
+model Action {
   id            Int         @id @default(autoincrement())
   name          String
   description   String
   serviceInfo   ServiceInfo @relation(fields: [serviceInfoId], references: [id])
   serviceInfoId Int
+
+  Area Area[]
 }
 
-model ServiceReaction {
+model Reaction {
   id            Int         @id @default(autoincrement())
   name          String
   description   String
   serviceInfo   ServiceInfo @relation(fields: [serviceInfoId], references: [id])
   serviceInfoId Int
+
+  Area Area[]
 }

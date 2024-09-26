@@ -66,6 +66,7 @@ export async function POST(req: NextRequest): Promise<
           reactionId: reaction.id,
           actionData: actionParameters,
           reactionData: reactionParameters,
+          title: `If ${action.name.toLowerCase()}, then ${reaction.name.toLowerCase()}`,
         },
       });
       return NextResponse.json(newArea);

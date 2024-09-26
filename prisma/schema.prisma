@@ -18,6 +18,7 @@ enum ServiceType {
 
 model Area {
   id           Int      @id @default(autoincrement())
+  title        String
   userId       String
   actionId     Int
   reactionId   Int

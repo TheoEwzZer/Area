@@ -57,10 +57,10 @@ export function Navbar(): ReactElement | null {
               <span className="text-2xl font-bold">AREA</span>
             </Link>
             <Link
-              href="/my-applets"
+              href="/my-areas"
               className="hover:text-foreground"
             >
-              My Applets
+              My Areas
             </Link>
             <Link
               href="/my-services"
@@ -88,10 +88,10 @@ export function Navbar(): ReactElement | null {
       <div className="ml-auto flex items-center gap-4">
         <nav className="hidden md:flex md:items-center md:gap-6">
           <Link
-            href="/my-applets"
+            href="/my-areas"
             className="whitespace-nowrap text-foreground transition-colors hover:text-foreground"
           >
-            My Applets
+            My Areas
           </Link>
           <Link
             href="/my-services"

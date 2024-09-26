@@ -2,6 +2,28 @@ import { db } from "@/lib/db";
 import { currentUser, User } from "@clerk/nextjs/server";
 import { Service } from "@prisma/client";
 
+async function refreshAccessToken(refreshToken: string): Promise<string> {
+  const response = await fetch("https://discord.com/api/v10/oauth2/token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+      client_id: process.env.DISCORD_CLIENT_ID!,
+      client_secret: process.env.DISCORD_CLIENT_SECRET!,
+      grant_type: "refresh_token",
+      refresh_token: refreshToken,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to refresh access token");
+  }
+
+  const data = await response.json();
+  return data.access_token;
+}
+
 export async function getDiscordAccessToken(): Promise<string> {
   const user: User | null = await currentUser();
 
@@ -29,17 +51,67 @@ export async function getDiscordAccessToken(): Promise<string> {
 }
 
 export async function getUserGuilds(accessToken: string): Promise<any> {
-  const response = await fetch("https://discord.com/api/v10/users/@me/guilds", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  try {
+    const response = await fetch(
+      "https://discord.com/api/v10/users/@me/guilds",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch user guilds");
+    if (!response.ok) {
+      throw new Error("Failed to fetch user guilds");
+    }
+
+    return response.json();
+  } catch {
+    try {
+      const user: User | null = await currentUser();
+      if (!user || !user.id) {
+        throw new Error("User not found or user ID is missing");
+      }
+
+      const service: Service | null = await db.service.findFirst({
+        where: {
+          userId: user.id,
+          service: "DISCORD",
+        },
+      });
+
+      if (!service || !service.refreshToken) {
+        throw new Error("Discord service or refresh token not found for user");
+      }
+
+      const newAccessToken: string = await refreshAccessToken(
+        service.refreshToken
+      );
+
+      await db.service.update({
+        where: { id: service.id },
+        data: { accessToken: newAccessToken },
+      });
+
+      const response = await fetch(
+        "https://discord.com/api/v10/users/@me/guilds",
+        {
+          headers: {
+            Authorization: `Bearer ${newAccessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch user guilds");
+      }
+
+      return response.json();
+    } catch (refreshError) {
+      console.error("Error refreshing token and retrying", refreshError);
+      return [];
+    }
   }
-
-  return response.json();
 }
 
 export async function getBotGuilds(): Promise<any> {

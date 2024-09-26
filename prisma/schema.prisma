@@ -25,6 +25,7 @@ model Area {
   reaction     Reaction @relation(fields: [reactionId], references: [id])
   actionData   Json
   reactionData Json
+  isActive     Boolean  @default(true)
 }
 
 model Service {

@@ -41,7 +41,11 @@ export default function MyApplets(): ReactElement {
 
   const filteredAreas: AreaWithServiceInfoOnly[] = areas.filter(
     (area: AreaWithServiceInfoOnly): boolean =>
-      area.title.toLowerCase().includes(filter.toLowerCase())
+      area.title.toLowerCase().includes(filter.toLowerCase()) ||
+      area.actionServiceInfo.type
+        .toLowerCase()
+        .includes(filter.toLowerCase()) ||
+      area.reactionServiceInfo.type.toLowerCase().includes(filter.toLowerCase())
   );
 
   const handleCardClick: (area: AreaWithServiceInfoOnly) => void = (

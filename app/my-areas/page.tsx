@@ -274,13 +274,7 @@ export default function MyApplets(): ReactElement {
                 />
               </div>
             </div>
-            <DialogFooter className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={(): void => setIsModalOpen(false)}
-              >
-                Cancel
-              </Button>
+            <DialogFooter className="flex justify-stretch">
               <div className="flex space-x-2">
                 <Button
                   variant="destructive"

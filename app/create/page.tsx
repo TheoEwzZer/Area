@@ -276,7 +276,7 @@ export default function WorkflowBuilder(): ReactElement {
         open={isServiceModalOpen}
         onOpenChange={setIsServiceModalOpen}
       >
-        <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+        <DialogContent>
           <h2 className="mb-4 text-center text-lg font-semibold">
             Choose service for this {selectedBlock?.type}
           </h2>
@@ -313,7 +313,7 @@ export default function WorkflowBuilder(): ReactElement {
         open={isActionModalOpen}
         onOpenChange={setIsActionModalOpen}
       >
-        <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+        <DialogContent>
           <Button
             variant="ghost"
             onClick={(): void => {
@@ -354,7 +354,7 @@ export default function WorkflowBuilder(): ReactElement {
         open={isParameterModalOpen}
         onOpenChange={setIsParameterModalOpen}
       >
-        <DialogContent className="rounded-lg bg-white p-6 shadow-lg">
+        <DialogContent>
           <Button
             variant="ghost"
             onClick={(): void => {

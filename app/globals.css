@@ -2,11 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #fbfbfb;
-  --foreground: #171717;
-}
-
 body {
   color: var(--foreground);
   background: var(--background);

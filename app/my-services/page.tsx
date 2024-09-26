@@ -188,7 +188,7 @@ export default function ServiceConnector(): ReactElement {
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
         >
-          <AlertDialogContent className="bg-white">
+          <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Disconnect</AlertDialogTitle>
               <AlertDialogDescription>

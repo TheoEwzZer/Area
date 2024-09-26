@@ -3,6 +3,20 @@ import { currentUser, User } from "@clerk/nextjs/server";
 import { Action, Area, Reaction, ServiceInfo } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+interface AreaWithServiceInfo extends Area {
+  action: {
+    serviceInfo: ServiceInfo;
+  };
+  reaction: {
+    serviceInfo: ServiceInfo;
+  };
+}
+
+export interface AreaWithServiceInfoOnly extends Area {
+  actionServiceInfo: ServiceInfo;
+  reactionServiceInfo: ServiceInfo;
+}
+
 export async function POST(req: NextRequest): Promise<
   | NextResponse<{
       detail: string;
@@ -77,6 +91,58 @@ export async function POST(req: NextRequest): Promise<
     console.error("Error creating area:", error);
     return NextResponse.json(
       { detail: "Failed to create area" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(): Promise<
+  | NextResponse<{
+      detail: string;
+    }>
+  | NextResponse<AreaWithServiceInfoOnly[]>
+> {
+  const user: User | null = await currentUser();
+
+  if (!user) {
+    return NextResponse.json(
+      { detail: "User not authenticated" },
+      { status: 401 }
+    );
+  }
+
+  try {
+    const areas: AreaWithServiceInfo[] = await db.area.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        action: {
+          select: {
+            serviceInfo: true,
+          },
+        },
+        reaction: {
+          select: {
+            serviceInfo: true,
+          },
+        },
+      },
+    });
+
+    const areasWithServiceInfo: AreaWithServiceInfoOnly[] = areas.map(
+      (area: AreaWithServiceInfo) => ({
+        ...area,
+        actionServiceInfo: area.action.serviceInfo,
+        reactionServiceInfo: area.reaction.serviceInfo,
+      })
+    );
+
+    return NextResponse.json(areasWithServiceInfo);
+  } catch (error) {
+    console.error("Error fetching areas:", error);
+    return NextResponse.json(
+      { detail: "Failed to fetch areas" },
       { status: 500 }
     );
   }

@@ -158,7 +158,18 @@ export default function ServiceConnector(): ReactElement {
                   {service.type.replace(/_/g, " ")}
                 </CardTitle>
                 <CardDescription className="text-white">
-                  {service.description}
+                  <div className="mb-2 font-semibold">Actions:</div>
+                  <ul className="list-disc pl-5">
+                    {service.actions.map((action : { name: string; id: number; description: string; serviceInfoId: number; }, index : number) : ReactElement => (
+                      <li key={`action-${index}`}>{action.name}</li>
+                    ))}
+                  </ul>
+                  <div className="mb-2 mt-4 font-semibold">Reactions:</div>
+                  <ul className="list-disc pl-5">
+                    {service.reactions.map((reaction : { name: string; id: number; description: string; serviceInfoId: number; }, index : number) : ReactElement => (
+                      <li key={`reaction-${index}`}>{reaction.name}</li>
+                    ))}
+                  </ul>
                 </CardDescription>
               </CardHeader>
               <CardFooter className="mt-auto">

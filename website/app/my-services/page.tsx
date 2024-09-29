@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { User } from "@clerk/nextjs/server";
 import { Action, Reaction, Service, ServiceType } from "@prisma/client";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -34,11 +35,13 @@ export default function ServiceConnector(): ReactElement {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [serviceToDisconnect, setServiceToDisconnect] =
     useState<ServiceType | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const router: AppRouterInstance = useRouter();
 
   useEffect((): void => {
     const fetchServices: () => Promise<void> = async (): Promise<void> => {
       try {
+        setIsLoading(true);
         const userResponse: Response = await fetch("/api/users/me");
         const userData: User = await userResponse.json();
 
@@ -66,6 +69,8 @@ export default function ServiceConnector(): ReactElement {
         }
       } catch (error) {
         console.error("Error fetching services:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -134,107 +139,138 @@ export default function ServiceConnector(): ReactElement {
       }
     };
 
+  const SkeletonCard: () => ReactElement = (): ReactElement => (
+    <Card className="flex flex-col">
+      <CardHeader>
+        <Skeleton className="mb-2 h-8 w-3/6" />
+        <div className="flex flex-col">
+          <div>
+            <Skeleton className="mb-2 h-4 w-2/5" />
+            <Skeleton className="mb-2 h-4 w-full" />
+            <Skeleton className="mb-2 h-4 w-full" />
+          </div>
+          <div>
+            <Skeleton className="mb-2 h-4 w-2/5" />
+            <Skeleton className="mb-2 h-4 w-full" />
+            <Skeleton className="mb-2 h-4 w-full" />
+          </div>
+        </div>
+      </CardHeader>
+      <CardFooter className="mt-auto">
+        <Skeleton className="h-10 w-full" />
+      </CardFooter>
+    </Card>
+  );
+
   return (
     <div className="container mx-auto py-8">
       <h1 className="mb-8 text-center text-4xl font-bold">
         Connect your services
       </h1>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {services.map(
-          (service: ServiceInfoWithActionsAndReactions): ReactElement => (
-            <Card
-              key={service.id}
-              className="flex flex-col"
-              style={{ backgroundColor: service.color }}
-            >
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <Image
-                    src={service.image_url}
-                    alt={service.type.replace(/_/g, " ")}
-                    width={32}
-                    height={32}
-                  />
-                  {service.type.replace(/_/g, " ")}
-                </CardTitle>
-                <CardDescription className="text-white">
-                  <div className="flex flex-col gap-4">
-                    {service.actions.length > 0 && (
-                      <div>
-                        <div className="mb-2 font-semibold">Actions:</div>
-                        <ul className="list-disc pl-5">
-                          {service.actions.map(
-                            (action: Action): ReactElement => (
-                              <li key={`action-${action.id}`}>{action.name}</li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                    {service.reactions.length > 0 && (
-                      <div>
-                        <div className="mb-2 font-semibold">Reactions:</div>
-                        <ul className="list-disc pl-5">
-                          {service.reactions.map(
-                            (reaction: Reaction): ReactElement => (
-                              <li key={`reaction-${reaction.id}`}>
-                                {reaction.name}
-                              </li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardFooter className="mt-auto">
-                <Button
-                  onClick={(): void | Promise<void> =>
-                    connectedServices.includes(service.type)
-                      ? handleDisconnectService(service.type)
-                      : handleConnectService(service.type)
-                  }
-                  variant={
-                    connectedServices.includes(service.type)
-                      ? "destructive"
-                      : "default"
-                  }
-                  className="w-full"
+        {isLoading
+          ? Array(6)
+              .fill(0)
+              .map(
+                (_: any, index: number): ReactElement => (
+                  <SkeletonCard key={index} />
+                )
+              )
+          : services.map(
+              (service: ServiceInfoWithActionsAndReactions): ReactElement => (
+                <Card
+                  key={service.id}
+                  className="flex flex-col"
+                  style={{ backgroundColor: service.color }}
                 >
-                  {connectedServices.includes(service.type)
-                    ? "Disconnect"
-                    : "Connect"}
-                </Button>
-              </CardFooter>
-            </Card>
-          )
-        )}
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-white">
+                      <Image
+                        src={service.image_url}
+                        alt={service.type.replace(/_/g, " ")}
+                        width={32}
+                        height={32}
+                      />
+                      {service.type.replace(/_/g, " ")}
+                    </CardTitle>
+                    <CardDescription className="text-white">
+                      <div className="flex flex-col gap-4">
+                        {service.actions.length > 0 && (
+                          <div>
+                            <div className="mb-2 font-semibold">Actions:</div>
+                            <ul className="list-disc pl-5">
+                              {service.actions.map(
+                                (action: Action): ReactElement => (
+                                  <li key={`action-${action.id}`}>
+                                    {action.name}
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                        {service.reactions.length > 0 && (
+                          <div>
+                            <div className="mb-2 font-semibold">Reactions:</div>
+                            <ul className="list-disc pl-5">
+                              {service.reactions.map(
+                                (reaction: Reaction): ReactElement => (
+                                  <li key={`reaction-${reaction.id}`}>
+                                    {reaction.name}
+                                  </li>
+                                )
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardFooter className="mt-auto">
+                    <Button
+                      onClick={(): void | Promise<void> =>
+                        connectedServices.includes(service.type)
+                          ? handleDisconnectService(service.type)
+                          : handleConnectService(service.type)
+                      }
+                      variant={
+                        connectedServices.includes(service.type)
+                          ? "destructive"
+                          : "default"
+                      }
+                      className="w-full"
+                    >
+                      {connectedServices.includes(service.type)
+                        ? "Disconnect"
+                        : "Connect"}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              )
+            )}
       </div>
 
-      {isModalOpen && (
-        <AlertDialog
-          open={isModalOpen}
-          onOpenChange={setIsModalOpen}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirm Disconnect</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to disconnect the service?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={(): void => setIsModalOpen(false)}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDisconnectService}>
-                Confirm
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+      <AlertDialog
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Disconnect</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to disconnect the service?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={(): void => setIsModalOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDisconnectService}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

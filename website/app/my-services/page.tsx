@@ -18,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { User } from "@clerk/nextjs/server";
 import { Action, Reaction, Service, ServiceType } from "@prisma/client";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -26,6 +25,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ReactElement, useEffect, useState } from "react";
 import { ServiceInfoWithActionsAndReactions } from "../about.json/route";
+import { SkeletonCard } from "./_components/skeleton-card";
 
 export default function ServiceConnector(): ReactElement {
   const [services, setServices] = useState<
@@ -138,29 +138,6 @@ export default function ServiceConnector(): ReactElement {
         console.error("Error disconnecting service:", error);
       }
     };
-
-  const SkeletonCard: () => ReactElement = (): ReactElement => (
-    <Card className="flex flex-col">
-      <CardHeader>
-        <Skeleton className="mb-2 h-8 w-3/6" />
-        <div className="flex flex-col">
-          <div>
-            <Skeleton className="mb-2 h-4 w-2/5" />
-            <Skeleton className="mb-2 h-4 w-full" />
-            <Skeleton className="mb-2 h-4 w-full" />
-          </div>
-          <div>
-            <Skeleton className="mb-2 h-4 w-2/5" />
-            <Skeleton className="mb-2 h-4 w-full" />
-            <Skeleton className="mb-2 h-4 w-full" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardFooter className="mt-auto">
-        <Skeleton className="h-10 w-full" />
-      </CardFooter>
-    </Card>
-  );
 
   return (
     <div className="container mx-auto py-8">

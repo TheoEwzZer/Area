@@ -1,10 +1,10 @@
 "use client";
 
 import { Block } from "@/app/create/types";
-import Loader from "@/components/loader";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Action, Service, ServiceType } from "@prisma/client";
 import { ArrowDown, ArrowLeft, Check, Search, Zap } from "lucide-react";
@@ -55,6 +55,7 @@ export default function WorkflowBuilder(): ReactElement {
   const [isAddBlockModalOpen, setIsAddBlockModalOpen] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isServicesLoading, setIsServicesLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
   const saveArea: () => Promise<void> = async (): Promise<void> => {
@@ -114,6 +115,7 @@ export default function WorkflowBuilder(): ReactElement {
   useEffect((): void => {
     const fetchServices: () => Promise<void> = async (): Promise<void> => {
       try {
+        setIsServicesLoading(true);
         const response = await fetch("/api/services");
         if (!response.ok) {
           throw new Error("Failed to fetch services");
@@ -123,6 +125,8 @@ export default function WorkflowBuilder(): ReactElement {
         setServices(data);
       } catch (error) {
         console.error("Error fetching services:", error);
+      } finally {
+        setIsServicesLoading(false);
       }
     };
 
@@ -352,10 +356,23 @@ export default function WorkflowBuilder(): ReactElement {
               />
             </div>
           </div>
-          <ServiceList
-            services={filteredServices}
-            onServiceClick={handleServiceClick}
-          />
+          {isServicesLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(
+                (i: number): ReactElement => (
+                  <Skeleton
+                    key={i}
+                    className="h-12 w-full"
+                  />
+                )
+              )}
+            </div>
+          ) : (
+            <ServiceList
+              services={filteredServices}
+              onServiceClick={handleServiceClick}
+            />
+          )}
         </DialogContent>
       </Dialog>
       <Dialog
@@ -379,8 +396,15 @@ export default function WorkflowBuilder(): ReactElement {
             {selectedService?.replace(/_/g, " ")}
           </h2>
           {isLoading ? (
-            <div className="flex items-center justify-center">
-              <Loader />
+            <div className="space-y-2">
+              {[1, 2, 3].map(
+                (i: number): ReactElement => (
+                  <Skeleton
+                    key={i}
+                    className="h-12 w-full"
+                  />
+                )
+              )}
             </div>
           ) : (
             selectedService &&

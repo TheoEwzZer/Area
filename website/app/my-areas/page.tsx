@@ -160,7 +160,6 @@ export default function MyAreas(): ReactElement {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <SkeletonCard />
         {isLoading
           ? Array(6)
               .fill(null)

@@ -293,7 +293,10 @@ export default function WorkflowBuilder(): ReactElement {
                 </div>
                 {index < blocks.length - 1 && (
                   <div className="flex justify-center">
-                    <ArrowDown className="h-8 w-8 text-gray-400" />
+                    <ArrowDown
+                      color="black"
+                      size={32}
+                    />
                   </div>
                 )}
               </React.Fragment>

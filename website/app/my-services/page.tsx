@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { User } from "@clerk/nextjs/server";
-import { Service, ServiceType } from "@prisma/client";
+import { Action, Reaction, Service, ServiceType } from "@prisma/client";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -158,18 +158,34 @@ export default function ServiceConnector(): ReactElement {
                   {service.type.replace(/_/g, " ")}
                 </CardTitle>
                 <CardDescription className="text-white">
-                  <div className="mb-2 font-semibold">Actions:</div>
-                  <ul className="list-disc pl-5">
-                    {service.actions.map((action : { name: string; id: number; description: string; serviceInfoId: number; }, index : number) : ReactElement => (
-                      <li key={`action-${index}`}>{action.name}</li>
-                    ))}
-                  </ul>
-                  <div className="mb-2 mt-4 font-semibold">Reactions:</div>
-                  <ul className="list-disc pl-5">
-                    {service.reactions.map((reaction : { name: string; id: number; description: string; serviceInfoId: number; }, index : number) : ReactElement => (
-                      <li key={`reaction-${index}`}>{reaction.name}</li>
-                    ))}
-                  </ul>
+                  <div className="flex flex-col gap-4">
+                    {service.actions.length > 0 && (
+                      <div>
+                        <div className="mb-2 font-semibold">Actions:</div>
+                        <ul className="list-disc pl-5">
+                          {service.actions.map(
+                            (action: Action): ReactElement => (
+                              <li key={`action-${action.id}`}>{action.name}</li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    {service.reactions.length > 0 && (
+                      <div>
+                        <div className="mb-2 font-semibold">Reactions:</div>
+                        <ul className="list-disc pl-5">
+                          {service.reactions.map(
+                            (reaction: Reaction): ReactElement => (
+                              <li key={`reaction-${reaction.id}`}>
+                                {reaction.name}
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </CardDescription>
               </CardHeader>
               <CardFooter className="mt-auto">

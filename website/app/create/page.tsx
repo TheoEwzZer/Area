@@ -238,11 +238,11 @@ export default function WorkflowBuilder(): ReactElement {
     }
   };
 
-  const handleDeleteBlock: (index: number) => void = (index: number): void => {
-    const newBlocks: Block[] = [...blocks];
-    newBlocks.splice(index, 1);
-    setBlocks(newBlocks);
-  };
+  // const handleDeleteBlock: (index: number) => void = (index: number): void => {
+  //   const newBlocks: Block[] = [...blocks];
+  //   newBlocks.splice(index, 1);
+  //   setBlocks(newBlocks);
+  // };
 
   const handleAddBlock: (type: "action" | "reaction") => void = (
     type: "action" | "reaction"

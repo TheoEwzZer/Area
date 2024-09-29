@@ -7,15 +7,14 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Action, Service, ServiceType } from "@prisma/client";
-import { ArrowDown, ArrowLeft, Check, Plus, Search, Trash, Zap } from "lucide-react";
+import { ArrowDown, ArrowLeft, Check, Search, Zap } from "lucide-react";
 import Link from "next/link";
-import { ChangeEvent, ReactElement, useEffect, useState } from "react";
+import React, { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { ServiceInfoWithActionsAndReactions } from "../about.json/route";
 import { ActionList } from "./_components/action-list";
 import { BlockItem } from "./_components/block-item";
 import ParameterForm from "./_components/parameter-form";
 import { ServiceList } from "./_components/service-list";
-import React from "react";
 
 const initialBlocks: Block[] = [
   {
@@ -39,14 +38,22 @@ export default function WorkflowBuilder(): ReactElement {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [filter, setFilter] = useState("");
-  const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
-  const [services, setServices] = useState<ServiceInfoWithActionsAndReactions[]>([]);
+  const [selectedService, setSelectedService] = useState<ServiceType | null>(
+    null
+  );
+  const [services, setServices] = useState<
+    ServiceInfoWithActionsAndReactions[]
+  >([]);
   const [connectedServices, setConnectedServices] = useState<ServiceType[]>([]);
   const [isServiceModalOpen, setIsServiceModalOpen] = useState<boolean>(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState<boolean>(false);
-  const [actionParameters, setActionParameters] = useState<Parameter | null>(null);
-  const [isParameterModalOpen, setIsParameterModalOpen] = useState<boolean>(false);
-  const [isAddBlockModalOpen, setIsAddBlockModalOpen] = useState<boolean>(false);
+  const [actionParameters, setActionParameters] = useState<Parameter | null>(
+    null
+  );
+  const [isParameterModalOpen, setIsParameterModalOpen] =
+    useState<boolean>(false);
+  const [isAddBlockModalOpen, setIsAddBlockModalOpen] =
+    useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
 
@@ -61,7 +68,8 @@ export default function WorkflowBuilder(): ReactElement {
     if (!action?.action || !reaction?.action) {
       toast({
         title: "Error",
-        description: "Please select both an action and a reaction before saving.",
+        description:
+          "Please select both an action and a reaction before saving.",
         variant: "destructive",
       });
       return;
@@ -110,44 +118,47 @@ export default function WorkflowBuilder(): ReactElement {
         if (!response.ok) {
           throw new Error("Failed to fetch services");
         }
-        const data: ServiceInfoWithActionsAndReactions[] = await response.json();
+        const data: ServiceInfoWithActionsAndReactions[] =
+          await response.json();
         setServices(data);
       } catch (error) {
         console.error("Error fetching services:", error);
       }
     };
 
-    const fetchConnectedServices: () => Promise<void> = async (): Promise<void> => {
-      try {
-        const userResponse: Response = await fetch("/api/users/me");
-        const userData : any = await userResponse.json();
-        const userId : any = userData.id;
+    const fetchConnectedServices: () => Promise<void> =
+      async (): Promise<void> => {
+        try {
+          const userResponse: Response = await fetch("/api/users/me");
+          const userData: any = await userResponse.json();
+          const userId: any = userData.id;
 
-        const response = await fetch(`/api/users/${userId}/services`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch connected services");
+          const response = await fetch(`/api/users/${userId}/services`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch connected services");
+          }
+          const data: any = await response.json();
+          const connectedServiceTypes: any = data.services.map(
+            (service: Service): ServiceType => service.service
+          );
+          setConnectedServices(connectedServiceTypes);
+        } catch (error) {
+          console.error("Error fetching connected services:", error);
         }
-        const data : any = await response.json();
-        const connectedServiceTypes : any = data.services.map(
-          (service: Service): ServiceType => service.service
-        );
-        setConnectedServices(connectedServiceTypes);
-      } catch (error) {
-        console.error("Error fetching connected services:", error);
-      }
-    };
+      };
 
     fetchServices();
     fetchConnectedServices();
   }, []);
 
-  const filteredServices: ServiceInfoWithActionsAndReactions[] = services.filter(
-    (service: ServiceInfoWithActionsAndReactions): boolean =>
-      connectedServices.includes(service.type) &&
-      service.type.toLowerCase().includes(filter.toLowerCase()) &&
-      ((selectedBlock?.type === "action" && service.actions.length > 0) ||
-        (selectedBlock?.type === "reaction" && service.reactions.length > 0))
-  );
+  const filteredServices: ServiceInfoWithActionsAndReactions[] =
+    services.filter(
+      (service: ServiceInfoWithActionsAndReactions): boolean =>
+        connectedServices.includes(service.type) &&
+        service.type.toLowerCase().includes(filter.toLowerCase()) &&
+        ((selectedBlock?.type === "action" && service.actions.length > 0) ||
+          (selectedBlock?.type === "reaction" && service.reactions.length > 0))
+    );
 
   const handleBlockClick: (block: Block) => void = (block: Block): void => {
     setSelectedBlock(block);
@@ -199,10 +210,11 @@ export default function WorkflowBuilder(): ReactElement {
       selectedService !== null &&
       actionParameters !== null
     ) {
-      const service: ServiceInfoWithActionsAndReactions | undefined = services.find(
-        (s: ServiceInfoWithActionsAndReactions): boolean =>
-          s.type === selectedService
-      );
+      const service: ServiceInfoWithActionsAndReactions | undefined =
+        services.find(
+          (s: ServiceInfoWithActionsAndReactions): boolean =>
+            s.type === selectedService
+        );
       if (service) {
         const updatedBlocks: Block[] = blocks.map(
           (b: Block): Block =>
@@ -226,23 +238,29 @@ export default function WorkflowBuilder(): ReactElement {
     }
   };
 
-  const handleDeleteBlock: (index: number) => void = (index: number) : void => {
-    const newBlocks : Block[] = [...blocks];
+  const handleDeleteBlock: (index: number) => void = (index: number): void => {
+    const newBlocks: Block[] = [...blocks];
     newBlocks.splice(index, 1);
     setBlocks(newBlocks);
   };
 
-  const handleAddBlock : (type: "action" | "reaction") => void = (type: "action" | "reaction") : void => {
+  const handleAddBlock: (type: "action" | "reaction") => void = (
+    type: "action" | "reaction"
+  ): void => {
     const newBlock: Block = {
       type,
       text: type === "action" ? "Choose an Action" : "Choose a REAction",
-      icon: type === "action" ? <Zap className="h-6 w-6" /> : <Check className="h-6 w-6" />,
-      color: type === "action" ? "#EF4444" : "#F59E0B"
+      icon:
+        type === "action" ? (
+          <Zap className="h-6 w-6" />
+        ) : (
+          <Check className="h-6 w-6" />
+        ),
+      color: type === "action" ? "#EF4444" : "#F59E0B",
     };
     setBlocks([...blocks, newBlock]);
     setIsAddBlockModalOpen(false);
   };
-  
 
   return (
     <div className="flex flex-col">
@@ -256,30 +274,32 @@ export default function WorkflowBuilder(): ReactElement {
           </h1>
         </div>
         <div className="space-y-4">
-          {blocks.map((block: Block, index: number): ReactElement => (
-            <React.Fragment key={index}>
-              <div className="relative w-full flex items-center">
-                <BlockItem
-                  block={block}
-                  onClick={(): void => handleBlockClick(block)}
-                  services={services}
-                />
-                <Button
-                  variant="ghost"
-                  className="ml-2"
-                  onClick={() : void => handleDeleteBlock(index)}
-                >
-                  <Trash className="h-5 w-5 text-red-500" />
-                </Button>
-              </div>
-              {index < blocks.length - 1 && (
-                <div className="flex justify-center">
-                  <ArrowDown className="h-8 w-8 text-gray-400" />
+          {blocks.map(
+            (block: Block, index: number): ReactElement => (
+              <React.Fragment key={index}>
+                <div className="relative flex w-full items-center">
+                  <BlockItem
+                    block={block}
+                    onClick={(): void => handleBlockClick(block)}
+                    services={services}
+                  />
+                  {/* <Button
+                    variant="ghost"
+                    className="ml-2"
+                    onClick={(): void => handleDeleteBlock(index)}
+                  >
+                    <Trash className="h-5 w-5 text-red-500" />
+                  </Button> */}
                 </div>
-              )}
-            </React.Fragment>
-          ))}
-          <div className="flex justify-center mt-4 pt-8">
+                {index < blocks.length - 1 && (
+                  <div className="flex justify-center">
+                    <ArrowDown className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+              </React.Fragment>
+            )
+          )}
+          {/* <div className="flex justify-center mt-4 pt-8">
             <Button
               variant="outline"
               className="rounded-full p-2"
@@ -287,7 +307,7 @@ export default function WorkflowBuilder(): ReactElement {
             >
               <Plus className="h-6 w-6" />
             </Button>
-          </div>
+          </div> */}
         </div>
         <div className="mt-12">
           <Button
@@ -308,7 +328,10 @@ export default function WorkflowBuilder(): ReactElement {
           </h2>
           <h3 className="mb-4 text-center text-sm text-gray-500">
             You can add more services to the list by connecting them on the{" "}
-            <Link href="/my-services" className="text-blue-500 underline">
+            <Link
+              href="/my-services"
+              className="text-blue-500 underline"
+            >
               My Services
             </Link>{" "}
             page.
@@ -409,15 +432,15 @@ export default function WorkflowBuilder(): ReactElement {
             Add a new block
           </h2>
           <div className="flex justify-center space-x-4">
-            <Button 
+            <Button
               style={{ backgroundColor: "#EF4444", color: "#fff" }}
-              onClick={() : void => handleAddBlock("action")}
+              onClick={(): void => handleAddBlock("action")}
             >
               Add Action
             </Button>
-            <Button 
+            <Button
               style={{ backgroundColor: "#F59E0B", color: "#fff" }}
-              onClick={() : void => handleAddBlock("reaction")}
+              onClick={(): void => handleAddBlock("reaction")}
             >
               Add REAction
             </Button>

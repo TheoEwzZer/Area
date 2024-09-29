@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { AreaWithServiceInfoOnly } from "../api/areas/route";
@@ -172,7 +173,7 @@ export default function MyApplets(): ReactElement {
                   height={24}
                   className="h-6 w-6 rounded-md"
                 />
-                <span className="text-sm text-white">➔</span>
+                <ArrowRight color="white" />
                 <Image
                   src={area.reactionServiceInfo.image_url}
                   alt={area.reactionServiceInfo.type}
@@ -235,7 +236,7 @@ export default function MyApplets(): ReactElement {
                   height={24}
                   className="rounded-md invert filter"
                 />
-                <span className="text-sm">➔</span>
+                <ArrowRight color="black" />
                 <Image
                   src={selectedArea.reactionServiceInfo.image_url}
                   alt={selectedArea.reactionServiceInfo.type}

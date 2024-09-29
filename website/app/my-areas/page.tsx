@@ -17,23 +17,28 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { AreaWithServiceInfoOnly } from "../api/areas/route";
+import { SkeletonCard } from "./_components/skeleton-card";
 
-export default function MyApplets(): ReactElement {
+export default function MyAreas(): ReactElement {
   const [areas, setAreas] = useState<AreaWithServiceInfoOnly[]>([]);
-  const [filter, setFilter] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filter, setFilter] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedArea, setSelectedArea] =
     useState<AreaWithServiceInfoOnly | null>(null);
-  const [editedTitle, setEditedTitle] = useState("");
+  const [editedTitle, setEditedTitle] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect((): void => {
     const fetchAreas: () => Promise<void> = async (): Promise<void> => {
       try {
+        setIsLoading(true);
         const response = await fetch("/api/areas");
         const data: AreaWithServiceInfoOnly[] = await response.json();
         setAreas(data);
       } catch (error) {
         console.error("Failed to fetch areas:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -155,59 +160,68 @@ export default function MyApplets(): ReactElement {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredAreas.map(
-          (area: AreaWithServiceInfoOnly): ReactElement => (
-            <Card
-              key={area.id}
-              className="relative cursor-pointer transition-all hover:shadow-lg"
-              style={{
-                background: `linear-gradient(to right, ${area.actionServiceInfo.color}, ${area.reactionServiceInfo.color})`,
-              }}
-              onClick={(): void => handleCardClick(area)}
-            >
-              <div className="absolute left-6 top-6 flex gap-2">
-                <Image
-                  src={area.actionServiceInfo.image_url}
-                  alt={area.actionServiceInfo.type}
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 rounded-md"
-                />
-                <ArrowRight color="white" />
-                <Image
-                  src={area.reactionServiceInfo.image_url}
-                  alt={area.reactionServiceInfo.type}
-                  width={24}
-                  height={24}
-                  className="h-6 w-6 rounded-md"
-                />
-              </div>
-              <CardHeader className="pt-14">
-                <CardTitle className="text-3xl text-white">
-                  {area.title}
-                </CardTitle>
-              </CardHeader>
-              <CardFooter className="flex justify-end">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id={`connect-mode-${area.id}`}
-                    checked={area.isActive}
-                    onClick={(e: React.MouseEvent<HTMLButtonElement>): void =>
-                      e.stopPropagation()
-                    }
-                    onCheckedChange={(): void => {
-                      setSelectedArea(area);
-                      handleAreaActivation();
-                    }}
-                  />
-                  <Label htmlFor={`connect-mode-${area.id}`}>
-                    {area.isActive ? "Connected" : "Disconnected"}
-                  </Label>
-                </div>
-              </CardFooter>
-            </Card>
-          )
-        )}
+        <SkeletonCard />
+        {isLoading
+          ? Array(6)
+              .fill(null)
+              .map(
+                (_: any, index: number): ReactElement => (
+                  <SkeletonCard key={index} />
+                )
+              )
+          : filteredAreas.map(
+              (area: AreaWithServiceInfoOnly): ReactElement => (
+                <Card
+                  key={area.id}
+                  className="relative cursor-pointer transition-all hover:shadow-lg"
+                  style={{
+                    background: `linear-gradient(to right, ${area.actionServiceInfo.color}, ${area.reactionServiceInfo.color})`,
+                  }}
+                  onClick={(): void => handleCardClick(area)}
+                >
+                  <div className="absolute left-6 top-6 flex gap-2">
+                    <Image
+                      src={area.actionServiceInfo.image_url}
+                      alt={area.actionServiceInfo.type}
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-md"
+                    />
+                    <ArrowRight color="white" />
+                    <Image
+                      src={area.reactionServiceInfo.image_url}
+                      alt={area.reactionServiceInfo.type}
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-md"
+                    />
+                  </div>
+                  <CardHeader className="pt-14">
+                    <CardTitle className="text-3xl text-white">
+                      {area.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardFooter className="flex justify-end">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id={`connect-mode-${area.id}`}
+                        checked={area.isActive}
+                        onClick={(
+                          e: React.MouseEvent<HTMLButtonElement>
+                        ): void => e.stopPropagation()}
+                        onCheckedChange={(): void => {
+                          setSelectedArea(area);
+                          handleAreaActivation();
+                        }}
+                      />
+                      <Label htmlFor={`connect-mode-${area.id}`}>
+                        {area.isActive ? "Connected" : "Disconnected"}
+                      </Label>
+                    </div>
+                  </CardFooter>
+                </Card>
+              )
+            )}
       </div>
 
       {isModalOpen && selectedArea && (

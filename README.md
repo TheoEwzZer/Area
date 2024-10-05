@@ -79,7 +79,7 @@ Here are the available API routes:
 
 - **GET /action-parameters/route.ts**: Retrieve action parameters.
 
-#### Response
+### Response
 
 ```json
 [
@@ -92,7 +92,7 @@ Here are the available API routes:
 
 - **PATCH /areas/[areaId]/route.ts**: Update a specific area by ID.
 
-#### Response
+### Response
 
 ```json
 [
@@ -107,7 +107,7 @@ Here are the available API routes:
 
 - **DELETE /areas/[areaId]/route.ts**: Delete a specific area by ID.
 
-#### Response
+### Response
 
 ```json
 [
@@ -119,7 +119,7 @@ Here are the available API routes:
 
 - **POST /areas/route.ts**: Create a new area.
 
-#### Response
+### Response
 
 ```json
 [

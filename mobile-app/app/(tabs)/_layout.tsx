@@ -75,7 +75,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="users"
           options={{
-            title: 'users',
+            title: 'Users',
             tabBarIcon: ({ color }) => (
               <List stroke={color} />
             ),

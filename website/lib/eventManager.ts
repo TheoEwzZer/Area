@@ -1,7 +1,11 @@
 import { Action, Reaction, Service } from "@prisma/client";
+import * as fs from "fs";
 import { GaxiosResponse } from "gaxios";
 import { OAuth2Client } from "google-auth-library";
 import { calendar_v3, google } from "googleapis";
+import * as path from "path";
+import { Readable } from "stream";
+import { finished } from "stream/promises";
 
 export interface EventHandler {
   checkTrigger?: (
@@ -91,6 +95,23 @@ async function sendEmail(
       raw: base64EncodedEmail,
     },
   });
+}
+
+async function downloadVideo(
+  videoUrl: string,
+  outputLocationPath: string
+): Promise<void> {
+  const response = await fetch(videoUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch video: ${response.statusText}`);
+  }
+
+  const writer: fs.WriteStream = fs.createWriteStream(outputLocationPath);
+  if (!response.body) {
+    throw new Error("Failed to fetch video: Response body is empty");
+  }
+  const nodeStream: Readable = Readable.fromWeb(response.body as any);
+  await finished(nodeStream.pipe(writer));
 }
 
 export const eventHandlers: Record<string, EventHandler> = {
@@ -222,6 +243,46 @@ export const eventHandlers: Record<string, EventHandler> = {
 
         default:
           console.error(`Unknown GMAIL reaction: ${reaction.name}`);
+      }
+    },
+  },
+  YOUTUBE: {
+    executeReaction: async (
+      reaction: Reaction,
+      reactionData: any,
+      service: Service
+    ): Promise<void> => {
+      const auth: OAuth2Client = googleAuth(service);
+      const youtube = google.youtube({ version: "v3", auth });
+
+      switch (reaction.name) {
+        case "Upload video from URL": {
+          console.log("Uploading video from URL:", reactionData.videoUrl);
+          const videoPath: string = path.join(__dirname, "temp_video.mp4");
+          await downloadVideo(reactionData.videoUrl, videoPath);
+
+          await youtube.videos.insert({
+            part: ["snippet", "status"],
+            requestBody: {
+              snippet: {
+                title: reactionData.title,
+                description: reactionData.description,
+              },
+              status: {
+                privacyStatus: "public",
+              },
+            },
+            media: {
+              body: fs.createReadStream(videoPath),
+            },
+          });
+
+          fs.unlinkSync(videoPath);
+          break;
+        }
+
+        default:
+          console.error(`Unknown YouTube reaction: ${reaction.name}`);
       }
     },
   },

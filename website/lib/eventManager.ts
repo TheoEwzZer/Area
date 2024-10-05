@@ -21,7 +21,7 @@ export interface EventHandler {
   ) => Promise<string>;
 }
 
-export async function stopWatch(
+export async function stopWatchCalendar(
   service: Service,
   channelId: string,
   ressourceWatchId: string

@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { stopWatch } from "@/lib/eventManager";
+import { stopWatchCalendar } from "@/lib/eventManager";
 import { currentUser, User } from "@clerk/nextjs/server";
 import { Action, Area, Service, ServiceInfo } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -103,7 +103,7 @@ export async function DELETE(
     });
 
     if (service && area.channelWatchId && area.ressourceWatchId) {
-      await stopWatch(service, area.channelWatchId, area.ressourceWatchId);
+      await stopWatchCalendar(service, area.channelWatchId, area.ressourceWatchId);
     }
 
     await db.area.delete({

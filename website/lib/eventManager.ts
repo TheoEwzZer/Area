@@ -124,37 +124,34 @@ export const eventHandlers: Record<string, EventHandler> = {
       const auth: OAuth2Client = googleAuth(service);
       const calendar = google.calendar({ version: "v3", auth });
 
-      switch (action.name) {
-        case "New event added": {
-          const now = new Date();
-          const oneMinuteAgo: string = new Date(
-            now.getTime() - 1 * 60000
-          ).toISOString();
+      if (action.name === "New event added") {
+        const now = new Date();
+        const oneMinuteAgo: string = new Date(
+          now.getTime() - 1 * 60000
+        ).toISOString();
 
-          const response: GaxiosResponse<calendar_v3.Schema$Events> =
-            await calendar.events.list({
-              calendarId: actionData.calendar,
-              singleEvents: true,
-              orderBy: "startTime",
-            });
+        const response: GaxiosResponse<calendar_v3.Schema$Events> =
+          await calendar.events.list({
+            calendarId: actionData.calendar,
+            singleEvents: true,
+            orderBy: "startTime",
+          });
 
-          const newEvents: calendar_v3.Schema$Event[] | undefined =
-            response.data.items?.filter(
-              (event: calendar_v3.Schema$Event): boolean => {
-                if (!event.created) {
-                  return false;
-                }
-                const createdTime: number = new Date(event.created).getTime();
-                return createdTime >= new Date(oneMinuteAgo).getTime();
+        const newEvents: calendar_v3.Schema$Event[] | undefined =
+          response.data.items?.filter(
+            (event: calendar_v3.Schema$Event): boolean => {
+              if (!event.created) {
+                return false;
               }
-            );
+              const createdTime: number = new Date(event.created).getTime();
+              return createdTime >= new Date(oneMinuteAgo).getTime();
+            }
+          );
 
-          return newEvents && newEvents.length > 0;
-        }
-
-        default:
-          console.error(`Unknown Google Calendar action: ${action.name}`);
-          return false;
+        return newEvents && newEvents.length > 0;
+      } else {
+        console.error(`Unknown Google Calendar action: ${action.name}`);
+        return false;
       }
     },
     executeReaction: async (
@@ -255,34 +252,30 @@ export const eventHandlers: Record<string, EventHandler> = {
       const auth: OAuth2Client = googleAuth(service);
       const youtube = google.youtube({ version: "v3", auth });
 
-      switch (reaction.name) {
-        case "Upload video from URL": {
-          console.log("Uploading video from URL:", reactionData.videoUrl);
-          const videoPath: string = path.join(__dirname, "temp_video.mp4");
-          await downloadVideo(reactionData.videoUrl, videoPath);
+      if (reaction.name === "Upload video from URL") {
+        console.log("Uploading video from URL:", reactionData.videoUrl);
+        const videoPath: string = path.join(__dirname, "temp_video.mp4");
+        await downloadVideo(reactionData.videoUrl, videoPath);
 
-          await youtube.videos.insert({
-            part: ["snippet", "status"],
-            requestBody: {
-              snippet: {
-                title: reactionData.title,
-                description: reactionData.description,
-              },
-              status: {
-                privacyStatus: "public",
-              },
+        await youtube.videos.insert({
+          part: ["snippet", "status"],
+          requestBody: {
+            snippet: {
+              title: reactionData.title,
+              description: reactionData.description,
             },
-            media: {
-              body: fs.createReadStream(videoPath),
+            status: {
+              privacyStatus: "public",
             },
-          });
+          },
+          media: {
+            body: fs.createReadStream(videoPath),
+          },
+        });
 
-          fs.unlinkSync(videoPath);
-          break;
-        }
-
-        default:
-          console.error(`Unknown YouTube reaction: ${reaction.name}`);
+        fs.unlinkSync(videoPath);
+      } else {
+        console.error(`Unknown YouTube reaction: ${reaction.name}`);
       }
     },
   },

@@ -6,7 +6,6 @@ import { ServiceCard } from '@/components/ServiceCard';
 import { ThemedText } from '@/components/ThemedText';
 import { useServices } from '@/services/api/Services';
 import { Service } from '@/constants/Types';
-import { useAuth } from '@clerk/clerk-expo';
 
 export default function WorkflowsScreen() {
   const { theme } = useTheme();
@@ -72,7 +71,7 @@ export default function WorkflowsScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    flexDirection: 'column',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 16,
     paddingBottom: 16,

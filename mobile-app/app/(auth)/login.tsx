@@ -1,3 +1,4 @@
+import { ThemedText } from '@/components/ThemedText';
 import { useSignIn, useUser } from '@clerk/clerk-expo';
 import { Link } from 'expo-router';
 import React, { useState } from 'react';
@@ -54,12 +55,12 @@ const Login: React.FC = () => {
       </Pressable>
       <Link href="/reset" asChild>
         <Pressable style={styles.button}>
-          <Text>Forgot password?</Text>
+          <ThemedText type='default' lightColor='yes'>Forgot password?</ThemedText>
         </Pressable>
       </Link>
       <Link href="/register" asChild>
         <Pressable style={styles.button}>
-          <Text>Create Account</Text>
+          <ThemedText type='default' lightColor='yes'>Create Account</ThemedText>
         </Pressable>
       </Link>
     </View>

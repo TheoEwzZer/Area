@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,34 +8,14 @@ import {
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  Pressable,
 } from 'react-native';
 import { useTheme } from '@/hooks/ThemeContext';
 import { Colors } from '@/constants/Colors';
-import { useAuth } from '@clerk/clerk-expo'
-
-const mockServices = [
-  {
-    name: 'Service1',
-    color: '#FF5733',
-    actions: [
-      { name: 'Action1', serviceType: 'Service1' },
-    ],
-    reactions: [
-      { name: 'Reaction1', serviceType: 'Service1' },
-    ],
-  },
-  {
-    name: 'Service2',
-    color: '#33FF57',
-    actions: [
-      { name: 'Action2', serviceType: 'Service2' },
-    ],
-    reactions: [
-      { name: 'Reaction3', serviceType: 'Service2' },
-    ],
-  },
-];
-
+import { useUsers } from '@/services/api/Users';
+import { Service } from '@/constants/Types';
+import { useAuth } from '@clerk/clerk-expo';
+import { router } from 'expo-router';
 
 const Header = ({ textColor }: { textColor: string }) => (
   <View style={styles.header}>
@@ -50,58 +30,35 @@ export default function WorkflowsScreen() {
   const backgroundColor = Colors[theme].background;
   const textColor = Colors[theme].text;
 
+  const { fetchUserServices } = useUsers();
+  const [userServices, setUserServices] = useState<Service[]>([]);
   const [showServiceModal, setShowServiceModal] = useState(false);
-  const [showActionModal, setShowActionModal] = useState(false);
-  
   const [selectedBlockIndex, setSelectedBlockIndex] = useState(-1);
-  const [selectedService, setSelectedService] = useState<null | {
-    name: string;
-    color: string;
-    actions: { name: string; serviceType: string }[];
-    reactions: { name: string; serviceType: string }[];
-  }>(null);
-  
-  const [blocks, setBlocks] = useState<
-    { type: string; text: string; icon: string; color: string; service?: string }[]
-  >([
+  const [blocks, setBlocks] = useState([
     { type: 'action', text: 'If This', icon: 'zap', color: '#000' },
     { type: 'reaction', text: 'Then That', icon: 'check', color: '#000' },
   ]);
+  const { userId } = useAuth();
+  const [servicesLoaded, setServicesLoaded] = useState(false);
 
-  const handleAddBlock = (index: React.SetStateAction<number>) => {
+  useEffect(() => {
+    const loadUserServices = async () => {
+      if (!userId || servicesLoaded) return;
+      try {
+        const fetchedServices = await fetchUserServices(userId);
+        setUserServices(fetchedServices.services || []);
+        setServicesLoaded(true);
+      } catch (err) {
+        console.error('Failed to fetch user services:', err);
+      }
+    };
+
+    loadUserServices();
+  }, [fetchUserServices, userId, servicesLoaded]);
+
+  const handleAddBlock = (index: number) => {
     setSelectedBlockIndex(index);
     setShowServiceModal(true);
-  };
-
-  const handleServicePress = (serviceName: string) => {
-    const service = mockServices.find(s => s.name === serviceName);
-    setSelectedService(service);
-    setShowServiceModal(false);
-    setShowActionModal(true);
-  };
-
-  const handleActionPress = (actionName: string) => {
-    if (selectedService) {
-      const action = selectedService.actions.find(a => a.name === actionName);
-      if (action) {
-        handleSavePress(action);
-      }
-    }
-  };
-
-  const handleSavePress = (action: { name: any; serviceType: any; }) => {
-    if (action && selectedBlockIndex !== -1) {
-      const newBlocks = [...blocks];
-      const service = mockServices.find(s => s.name === action.serviceType);
-      newBlocks[selectedBlockIndex] = {
-        ...newBlocks[selectedBlockIndex],
-        text: action.name,
-        service: action.serviceType,
-        color: service ? service.color : '#000',
-      };
-      setBlocks(newBlocks);
-      setShowActionModal(false);
-    }
   };
 
   return (
@@ -130,41 +87,37 @@ export default function WorkflowsScreen() {
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={() => {}}>
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Select a Service</Text>
-                <ScrollView>
-                  {mockServices.map((service, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.modalItem}
-                      onPress={() => handleServicePress(service.name)}
-                    >
-                      <Text style={styles.modalItemText}>{service.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
-      <Modal visible={showActionModal} animationType="slide" transparent={true}>
-        <TouchableWithoutFeedback onPress={() => setShowActionModal(false)}>
-          <View style={styles.modalContainer}>
-            <TouchableWithoutFeedback onPress={() => {}}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Select an Action</Text>
-                <ScrollView>
-                  {selectedService?.actions.map((action, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.modalItem}
-                      onPress={() => handleActionPress(action.name)}
-                    >
-                      <Text style={styles.modalItemText}>{action.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                <Text style={styles.modalTitle}>
+                  {userServices.length === 0
+                    ? "No services linked yet"
+                    : "Select a Service"}
+                </Text>
+                {userServices.length === 0 && (
+                  <Pressable
+                    onPress={() => {
+                      setShowServiceModal(false);
+                      router.push('/link');
+                    }}
+                  >
+                    <Text style={styles.linkText}>Click here to go to the link page</Text>
+                  </Pressable>
+                )}
+                {userServices.length > 0 && (
+                  <ScrollView>
+                    {userServices.map((service, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.modalItem}
+                        onPress={() => {
+                          // Handle service selection here
+                          setShowServiceModal(false);
+                        }}
+                      >
+                        <Text style={styles.modalItemText}>{service.service}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
               </View>
             </TouchableWithoutFeedback>
           </View>
@@ -174,7 +127,6 @@ export default function WorkflowsScreen() {
   );
 }
 
-// Styles Simplifiés
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -220,7 +172,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     width: '80%',
@@ -228,13 +180,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
-    position: 'relative',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1,
   },
   modalTitle: {
     fontSize: 18,
@@ -249,5 +194,10 @@ const styles = StyleSheet.create({
   },
   modalItemText: {
     fontSize: 16,
+  },
+  linkText: {
+    color: 'blue',
+    textAlign: 'center',
+    marginTop: 10,
   },
 });

@@ -1,16 +1,27 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { Workflow, Plus, Link, Moon, Sun } from 'lucide-react-native';
+import { Workflow, Plus, Link, Moon, Sun, DoorOpen, List } from 'lucide-react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/ThemeContext';
 import { Tabs } from 'expo-router';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function TabLayout() {
   const { theme, toggleTheme } = useTheme();
   const textColor = Colors[theme].text;
   const backgroundColor = Colors[theme].background;
   const borderColor = Colors[theme].tint;
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      // Rediriger l'utilisateur vers la page de connexion ou d'accueil
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor }]}>
@@ -18,9 +29,14 @@ export default function TabLayout() {
         <ThemedText type="title" style={[styles.headerText, { color: textColor }]}>
           AREA
         </ThemedText>
-        <Pressable onPress={toggleTheme} style={[styles.pressable, { borderColor }]}>
-          {theme === 'light' ? <Moon stroke={textColor} /> : <Sun stroke={textColor} />}
-        </Pressable>
+        <View style={styles.headerRight}>
+          <Pressable onPress={toggleTheme} style={[styles.pressable, { borderColor }]}>
+            {theme === 'light' ? <Moon stroke={textColor} /> : <Sun stroke={textColor} />}
+          </Pressable>
+          <Pressable onPress={handleSignOut} style={[styles.pressable, { borderColor }]}>
+            <DoorOpen stroke={textColor} />
+          </Pressable>
+        </View>
       </View>
       <View style={[styles.headerLine, { borderColor }]} />
       <Tabs
@@ -56,6 +72,15 @@ export default function TabLayout() {
             ),
           }}
         />
+        <Tabs.Screen
+          name="users"
+          options={{
+            title: 'users',
+            tabBarIcon: ({ color }) => (
+              <List stroke={color} />
+            ),
+          }}
+        />
       </Tabs>
     </View>
   );
@@ -75,6 +100,10 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 20,
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerLine: {
     height: 1,
     backgroundColor: 'transparent',
@@ -85,5 +114,6 @@ const styles = StyleSheet.create({
     padding: 8,
     borderWidth: 1,
     borderRadius: 4,
+    marginLeft: 8,
   },
 });

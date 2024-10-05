@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
+import { stopWatch } from "@/lib/eventManager";
 import { currentUser, User } from "@clerk/nextjs/server";
-import { Area } from "@prisma/client";
+import { Action, Area, Service, ServiceInfo } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
@@ -54,12 +55,9 @@ export async function DELETE(
   _: NextRequest,
   { params }: { params: { areaId: string } }
 ): Promise<
-  | NextResponse<{
-      detail: string;
-    }>
-  | NextResponse<{
-      detail: string;
-    }>
+  NextResponse<{
+    detail: string;
+  }>
 > {
   const user: User | null = await currentUser();
   const id: string = params.areaId;
@@ -81,6 +79,31 @@ export async function DELETE(
         { detail: "Area not found or not authorized" },
         { status: 404 }
       );
+    }
+
+    const action: (Action & { serviceInfo: ServiceInfo }) | null =
+      await db.action.findFirst({
+        where: {
+          id: area.actionId,
+        },
+        include: {
+          serviceInfo: true,
+        },
+      });
+
+    if (!action) {
+      throw new Error("Action not found");
+    }
+
+    const service: Service | null = await db.service.findFirst({
+      where: {
+        userId: user.id,
+        service: action.serviceInfo.type,
+      },
+    });
+
+    if (service && area.channelWatchId && area.ressourceWatchId) {
+      await stopWatch(service, area.channelWatchId, area.ressourceWatchId);
     }
 
     await db.area.delete({

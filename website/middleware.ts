@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 const isPublicRoute: (req: NextRequest) => boolean = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/api/webhook/(.*)",
 ]);
 const isAdminRoute: (req: NextRequest) => boolean = createRouteMatcher([
   "/admin(.*)",

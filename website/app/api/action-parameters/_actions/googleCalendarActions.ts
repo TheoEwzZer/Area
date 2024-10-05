@@ -5,20 +5,6 @@ import {
 import { Option } from "@/types/globals";
 import { NextResponse } from "next/server";
 
-const timeOptions: Option[] = [
-  { value: "0", label: "0 minute" },
-  { value: "15", label: "15 minutes" },
-  { value: "30", label: "30 minutes" },
-  { value: "45", label: "45 minutes" },
-  { value: "60", label: "1 heure" },
-  { value: "90", label: "1 heure 30" },
-  { value: "120", label: "2 heures" },
-  { value: "150", label: "2 heures 30" },
-  { value: "180", label: "3 heures" },
-  { value: "210", label: "3 heures 30" },
-  { value: "240", label: "4 heures" },
-];
-
 export async function handleGoogleCalendarAction(
   action: string
 ): Promise<NextResponse<any>> {
@@ -61,34 +47,6 @@ export async function handleGoogleCalendarAction(
                 label: calendar.name!,
               })
             ),
-          },
-        ],
-      });
-    }
-
-    case "Any event starts": {
-      return NextResponse.json({
-        actionName: action,
-        parameters: [
-          {
-            name: "calendar",
-            label: "Which calendar?",
-            type: "select",
-            options: calendars.map(
-              (calendar: {
-                id: string | null | undefined;
-                name: string | null | undefined;
-              }): Option => ({
-                value: calendar.id!,
-                label: calendar.name!,
-              })
-            ),
-          },
-          {
-            name: "timeBeforeEvent",
-            label: "Time before event starts",
-            type: "select",
-            options: timeOptions,
           },
         ],
       });

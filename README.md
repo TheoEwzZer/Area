@@ -37,6 +37,8 @@ The project is built using the following technologies:
 #### Google Calendar Actions
 
 - **New event added**: This trigger fires every time a new event is added to your Google Calendar.
+- **Event deleted**: This trigger fires every time an event is deleted from your Google Calendar.
+- **Event modified**: This trigger fires every time an event is modified in your Google Calendar.
 
 #### Google Calendar Reactions
 

@@ -22,7 +22,7 @@ export interface EventHandler {
     service: Service,
     actionData: any,
     actionId: number
-  ) => Promise<string>;
+  ) => Promise<[string, string]>;
 }
 
 export async function stopWatchCalendar(
@@ -124,34 +124,102 @@ export const eventHandlers: Record<string, EventHandler> = {
       const auth: OAuth2Client = googleAuth(service);
       const calendar = google.calendar({ version: "v3", auth });
 
-      if (action.name === "New event added") {
-        const now = new Date();
-        const oneMinuteAgo: string = new Date(
-          now.getTime() - 1 * 60000
-        ).toISOString();
+      switch (action.name) {
+        case "New event added": {
+          const now = new Date();
+          const oneMinuteAgo: string = new Date(
+            now.getTime() - 1 * 60000
+          ).toISOString();
 
-        const response: GaxiosResponse<calendar_v3.Schema$Events> =
-          await calendar.events.list({
-            calendarId: actionData.calendar,
-            singleEvents: true,
-            orderBy: "startTime",
-          });
+          const response: GaxiosResponse<calendar_v3.Schema$Events> =
+            await calendar.events.list({
+              calendarId: actionData.calendar,
+              singleEvents: true,
+              orderBy: "startTime",
+            });
 
-        const newEvents: calendar_v3.Schema$Event[] | undefined =
-          response.data.items?.filter(
-            (event: calendar_v3.Schema$Event): boolean => {
-              if (!event.created) {
-                return false;
+          const newEvents: calendar_v3.Schema$Event[] | undefined =
+            response.data.items?.filter(
+              (event: calendar_v3.Schema$Event): boolean => {
+                if (!event.created) {
+                  return false;
+                }
+                const createdTime: number = new Date(event.created).getTime();
+                return createdTime >= new Date(oneMinuteAgo).getTime();
               }
-              const createdTime: number = new Date(event.created).getTime();
-              return createdTime >= new Date(oneMinuteAgo).getTime();
-            }
-          );
+            );
 
-        return newEvents && newEvents.length > 0;
-      } else {
-        console.error(`Unknown Google Calendar action: ${action.name}`);
-        return false;
+          return newEvents && newEvents.length > 0;
+        }
+
+        case "Event deleted": {
+          const now = new Date();
+          const oneMinuteAgo: string = new Date(
+            now.getTime() - 1 * 60000
+          ).toISOString();
+
+          const response: GaxiosResponse<calendar_v3.Schema$Events> =
+            await calendar.events.list({
+              calendarId: actionData.calendar,
+              showDeleted: true,
+              singleEvents: true,
+              orderBy: "startTime",
+            });
+
+          const deletedEvents: calendar_v3.Schema$Event[] | undefined =
+            response.data.items?.filter(
+              (event: calendar_v3.Schema$Event): boolean => {
+                if (
+                  !event.updated ||
+                  !event.status ||
+                  event.status !== "cancelled"
+                ) {
+                  return false;
+                }
+                const updatedTime: number = new Date(event.updated).getTime();
+                return updatedTime >= new Date(oneMinuteAgo).getTime();
+              }
+            );
+
+          return deletedEvents && deletedEvents.length > 0;
+        }
+
+        case "Event modified": {
+          const now = new Date();
+          const oneMinuteAgo: string = new Date(
+            now.getTime() - 1 * 60000
+          ).toISOString();
+
+          const response: GaxiosResponse<calendar_v3.Schema$Events> =
+            await calendar.events.list({
+              calendarId: actionData.calendar,
+              singleEvents: true,
+              orderBy: "startTime",
+            });
+
+          const modifiedEvents: calendar_v3.Schema$Event[] | undefined =
+            response.data.items?.filter(
+              (event: calendar_v3.Schema$Event): boolean => {
+                if (!event.updated || event.status === "cancelled") {
+                  return false;
+                }
+                const updatedTime: number = new Date(event.updated).getTime();
+                const createdTime: number = event.created
+                  ? new Date(event.created).getTime()
+                  : 0;
+                return (
+                  updatedTime >= new Date(oneMinuteAgo).getTime() &&
+                  updatedTime !== createdTime
+                );
+              }
+            );
+
+          return modifiedEvents && modifiedEvents.length > 0;
+        }
+
+        default:
+          console.error(`Unknown Google Calendar action: ${action.name}`);
+          return false;
       }
     },
     executeReaction: async (
@@ -196,21 +264,21 @@ export const eventHandlers: Record<string, EventHandler> = {
       service: Service,
       actionData: any,
       actionId: number
-    ): Promise<string> => {
+    ): Promise<[string, string]> => {
       const auth: OAuth2Client = googleAuth(service);
       const calendar = google.calendar({ version: "v3", auth });
-
+      const id: string = `calendar-watch-${service.userId}-${actionId}-${Date.now()}`;
       const response: GaxiosResponse<calendar_v3.Schema$Channel> =
         await calendar.events.watch({
           calendarId: actionData.calendar,
           requestBody: {
-            id: `calendar-watch-${service.userId}-${actionId}`,
+            id: id,
             type: "web_hook",
             address: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhook/google_calendar`,
           },
         });
 
-      return response.data.resourceId!;
+      return [response.data.resourceId!, id];
     },
   },
   GMAIL: {

@@ -90,8 +90,9 @@ export async function POST(req: NextRequest): Promise<
 
       const handler: EventHandler = eventHandlers[actionService];
       let ressourceWatchId: string = "";
+      let channelWatchId: string = "";
       if (handler?.setupWebhook) {
-        ressourceWatchId = await handler.setupWebhook(
+        [ressourceWatchId, channelWatchId] = await handler.setupWebhook(
           service,
           actionParameters,
           action.id
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest): Promise<
           actionData: actionParameters,
           reactionData: reactionParameters,
           title: `If ${action.name.toLowerCase()}, then ${reaction.name.toLowerCase()}`,
-          channelWatchId: `calendar-watch-${service.userId}-${action.id}`,
+          channelWatchId: channelWatchId,
           ressourceWatchId: ressourceWatchId,
         },
       });

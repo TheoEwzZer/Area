@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/clerk-sdk-node": "^5.0.48",
     "@clerk/nextjs": "^5.5.4",
     "@prisma/client": "^5.20.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

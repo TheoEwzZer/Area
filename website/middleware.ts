@@ -5,7 +5,6 @@ import {
 } from "@clerk/nextjs/server";
 import { NextURL } from "next/dist/server/web/next-url";
 import { NextRequest, NextResponse } from "next/server";
-
 const isPublicRoute: (req: NextRequest) => boolean = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
@@ -14,11 +13,12 @@ const isPublicRoute: (req: NextRequest) => boolean = createRouteMatcher([
 const isAdminRoute: (req: NextRequest) => boolean = createRouteMatcher([
   "/admin(.*)",
 ]);
-
 export default clerkMiddleware(
   (auth: ClerkMiddlewareAuth, request: NextRequest): NextResponse | void => {
     const url: NextURL = request.nextUrl;
-
+    request.headers.append('Access-Control-Allow-Credentials', "true")
+    request.headers.append('Access-Control-Allow-Origin', '*')
+    request.headers.append('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT')
     if (url.pathname === "/") {
       if (auth().userId) {
         url.pathname = "/create";
@@ -30,7 +30,14 @@ export default clerkMiddleware(
     }
 
     if (!isPublicRoute(request)) {
-      auth().protect();
+      const userId: string | null = auth().userId;
+      console.log("userId", userId);
+      console.log(1);
+      if (!userId) {
+        url.pathname = "/sign-in";
+        return NextResponse.redirect(url);
+      }
+      console.log(2);
 
       const isAdmin: boolean = auth().sessionClaims?.metadata.role === "admin";
 
@@ -39,7 +46,8 @@ export default clerkMiddleware(
         return NextResponse.redirect(url);
       }
     }
-  }
+  },
+  { debug: true }
 );
 
 export const config = {

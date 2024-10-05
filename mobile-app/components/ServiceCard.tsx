@@ -1,24 +1,36 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Linking, Dimensions, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Linking, Dimensions, ScrollView, Image } from 'react-native';
 
 const screenWidth = Dimensions.get('window').width;
 const cardWidth = screenWidth * 0.8;
 const maxContentHeight = 200;
 
-export const ServiceCard = ({ color, name, oauthLink, actions, reactions }: { color: string, name: string, oauthLink: string, actions: string[], reactions: string[] }) => {
-  const handleOAuthPress = () => {
-    Linking.openURL(oauthLink);
+interface ServiceCardProps {
+  color: string;
+  name: string;
+  imageUrl: string;
+  actions: string[];
+  reactions: string[];
+}
+
+export const ServiceCard: React.FC<ServiceCardProps> = ({ color, name, imageUrl, actions, reactions }) => {
+  const handleConnectPress = () => {
+    console.log(`Connecting to ${name}`);
   };
 
-  const renderList = (items: string[], title: string) => (
+  const renderList = (items: string[], title: string, emptyMessage: string) => (
     <View style={styles.listContainer}>
       <Text style={styles.columnTitle}>{title}</Text>
-      {items.map((item, index) => (
-        <View key={index} style={styles.listItemContainer}>
-          <View style={styles.bullet} />
-          <Text style={styles.listItem}>{item}</Text>
-        </View>
-      ))}
+      {items.length === 0 ? (
+        <Text style={styles.emptyMessage}>{emptyMessage}</Text>
+      ) : (
+        items.map((item, index) => (
+          <View key={index} style={styles.listItemContainer}>
+            <View style={styles.bullet} />
+            <Text style={styles.listItem}>{item}</Text>
+          </View>
+        ))
+      )}
     </View>
   );
 
@@ -26,22 +38,16 @@ export const ServiceCard = ({ color, name, oauthLink, actions, reactions }: { co
     <View style={styles.container}>
       <View style={[styles.card, { backgroundColor: color }]}>
         <View style={styles.header}>
+          <Image source={{ uri: imageUrl }} style={styles.image} />
           <Text style={styles.headerText}>{name}</Text>
         </View>
-
-        {/* ScrollView for actions and reactions */}
         <ScrollView style={styles.scrollContent} nestedScrollEnabled={true}>
-          {/* Actions List */}
-          {renderList(actions, 'Actions')}
-
-          {/* Reactions List */}
-          {renderList(reactions, 'Réactions')}
+          {renderList(actions, actions.length === 1 ? 'Action' : 'Actions', 'Aucune action')}
+          {renderList(reactions, reactions.length === 1 ? 'Reaction' : 'Reactions', 'Aucune reaction')}
         </ScrollView>
-
-        {/* OAuth button at the bottom */}
-        <View style={styles.oauthContainer}>
-          <TouchableOpacity style={styles.oauthButton} onPress={handleOAuthPress}>
-            <Text style={[styles.oauthButtonText, { color }]}>Connecter avec OAuth</Text>
+        <View style={styles.connectContainer}>
+          <TouchableOpacity style={styles.connectButton} onPress={handleConnectPress}>
+            <Text style={[styles.connectButtonText, { color }]}>Connect</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -66,9 +72,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 16,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
+  },
+  image: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
+    borderRadius: 20,
   },
   headerText: {
     fontSize: 20,
@@ -76,11 +90,11 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   scrollContent: {
-    maxHeight: maxContentHeight, // Limite de hauteur avec scroll si nécessaire
+    maxHeight: maxContentHeight,
     paddingHorizontal: 16,
   },
   listContainer: {
-    marginBottom: 16, // Espacement entre les listes
+    marginBottom: 16,
   },
   columnTitle: {
     fontSize: 16,
@@ -92,7 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 6,
-    paddingLeft: 10, // Décalage vers la droite
+    paddingLeft: 10,
   },
   bullet: {
     width: 4,
@@ -106,16 +120,21 @@ const styles = StyleSheet.create({
     color: 'white',
     flex: 1,
   },
-  oauthContainer: {
+  emptyMessage: {
+    fontSize: 12,
+    color: 'white',
+    fontStyle: 'italic',
+  },
+  connectContainer: {
     padding: 16,
   },
-  oauthButton: {
+  connectButton: {
     backgroundColor: 'white',
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
   },
-  oauthButtonText: {
+  connectButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
   },

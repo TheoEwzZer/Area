@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@/hooks/ThemeContext';
 import { Colors } from '@/constants/Colors';
+import { useAuth } from '@clerk/clerk-expo'
 
 const mockServices = [
   {
@@ -34,6 +35,7 @@ const mockServices = [
     ],
   },
 ];
+
 
 const Header = ({ textColor }: { textColor: string }) => (
   <View style={styles.header}>

@@ -29,7 +29,6 @@ const PwReset = () => {
         code,
         password,
       });
-      console.log(result);
       alert('Password reset successfully');
 
       await setActive!({ session: result?.createdSessionId });

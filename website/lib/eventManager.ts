@@ -4,12 +4,12 @@ import { OAuth2Client } from "google-auth-library";
 import { calendar_v3, google } from "googleapis";
 
 export interface EventHandler {
-  checkTrigger: (
+  checkTrigger?: (
     action: Action,
     actionData: any,
     service: Service
   ) => Promise<boolean | undefined>;
-  executeReaction: (
+  executeReaction?: (
     reaction: Reaction,
     reactionData: any,
     service: Service
@@ -65,6 +65,33 @@ const googleAuth: (service: Service) => OAuth2Client = (
   });
   return auth;
 };
+
+async function sendEmail(
+  service: Service,
+  to: string,
+  subject: string,
+  text: string
+): Promise<void> {
+  const auth: OAuth2Client = googleAuth(service);
+  const gmail = google.gmail({ version: "v1", auth });
+
+  const email: string = [`To: ${to}`, `Subject: ${subject}`, "", text].join(
+    "\n"
+  );
+
+  const base64EncodedEmail: string = Buffer.from(email)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
+
+  await gmail.users.messages.send({
+    auth: auth,
+    userId: "me",
+    requestBody: {
+      raw: base64EncodedEmail,
+    },
+  });
+}
 
 export const eventHandlers: Record<string, EventHandler> = {
   GOOGLE_CALENDAR: {
@@ -166,6 +193,36 @@ export const eventHandlers: Record<string, EventHandler> = {
         });
 
       return response.data.resourceId!;
+    },
+  },
+  GMAIL: {
+    executeReaction: async (
+      reaction: Reaction,
+      reactionData: any,
+      service: Service
+    ): Promise<void> => {
+      switch (reaction.name) {
+        case "Send an email":
+          await sendEmail(
+            service,
+            reactionData.toAddress,
+            reactionData.subject,
+            reactionData.body
+          );
+          break;
+
+        case "Send yourself an email":
+          await sendEmail(
+            service,
+            reactionData.account,
+            reactionData.subject,
+            reactionData.body
+          );
+          break;
+
+        default:
+          console.error(`Unknown GMAIL reaction: ${reaction.name}`);
+      }
     },
   },
 };

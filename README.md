@@ -45,11 +45,6 @@ The project is built using the following technologies:
 
 ### YouTube
 
-#### YouTube Actions
-
-- **New liked video**: This trigger fires every time you like a video on YouTube.
-- **You subscribe to a channel**: This trigger fires when a new subscription is made by you, or another specific channel.
-
 #### YouTube Reactions
 
 - **Upload video from URL**: This action will publish a video or Short from a given URL to your YouTube channel. Video will be uploaded as a Short or regular video based on the video length and aspect ratio.

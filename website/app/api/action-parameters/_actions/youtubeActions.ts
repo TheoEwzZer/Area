@@ -11,85 +11,39 @@ export async function handleYoutubeAction(
     value: string | null | undefined;
   } = await getYouTubeUserAccount(userAccessToken);
 
-  switch (action) {
-    case "New liked video": {
-      return NextResponse.json({
-        actionName: action,
-        parameters: [
-          {
-            name: "account",
-            label: "YouTube account",
-            type: "select",
-            options: [
-              {
-                value: userAccount.id,
-                label: userAccount.value,
-              },
-            ],
-          },
-        ],
-      });
-    }
-
-    case "You subscribe to a channel": {
-      return NextResponse.json({
-        actionName: action,
-        parameters: [
-          {
-            name: "account",
-            label: "YouTube account",
-            type: "select",
-            options: [
-              {
-                value: userAccount.id,
-                label: userAccount.value,
-              },
-            ],
-          },
-          {
-            name: "channelId",
-            label: "Channel id",
-            type: "text",
-          },
-        ],
-      });
-    }
-
-    case "Upload video from URL": {
-      return NextResponse.json({
-        actionName: action,
-        parameters: [
-          {
-            name: "account",
-            label: "YouTube account",
-            type: "select",
-            options: [
-              {
-                value: userAccount.id,
-                label: userAccount.value,
-              },
-            ],
-          },
-          {
-            name: "videoUrl",
-            label: "Video URL",
-            type: "text",
-          },
-          {
-            name: "title",
-            label: "Title",
-            type: "text",
-          },
-          {
-            name: "description",
-            label: "Description",
-            type: "textarea",
-          },
-        ],
-      });
-    }
-
-    default:
-      return NextResponse.json({ detail: "Invalid action" }, { status: 400 });
+  if (action === "Upload video from URL") {
+    return NextResponse.json({
+      actionName: action,
+      parameters: [
+        {
+          name: "account",
+          label: "YouTube account",
+          type: "select",
+          options: [
+            {
+              value: userAccount.id,
+              label: userAccount.value,
+            },
+          ],
+        },
+        {
+          name: "videoUrl",
+          label: "Video URL",
+          type: "text",
+        },
+        {
+          name: "title",
+          label: "Title",
+          type: "text",
+        },
+        {
+          name: "description",
+          label: "Description",
+          type: "textarea",
+        },
+      ],
+    });
+  } else {
+    return NextResponse.json({ detail: "Invalid action" }, { status: 400 });
   }
 }

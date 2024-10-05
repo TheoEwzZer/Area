@@ -26,7 +26,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
         client_id: clientId,
         client_secret: clientSecret,
         grant_type: "authorization_code",
-        code: code as string,
+        code: code,
         redirect_uri: redirectUri,
       }),
     });
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
       throw new Error("Failed to exchange code for tokens");
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     const { access_token, refresh_token } = data;
 
     const user: User | null = await currentUser();

@@ -1,7 +1,11 @@
 import { Action, Reaction, Service } from "@prisma/client";
+import * as fs from "fs";
 import { GaxiosResponse } from "gaxios";
 import { OAuth2Client } from "google-auth-library";
 import { calendar_v3, google } from "googleapis";
+import * as path from "path";
+import { Readable } from "stream";
+import { finished } from "stream/promises";
 
 export interface EventHandler {
   checkTrigger?: (
@@ -18,7 +22,7 @@ export interface EventHandler {
     service: Service,
     actionData: any,
     actionId: number
-  ) => Promise<string>;
+  ) => Promise<[string, string]>;
 }
 
 export async function stopWatchCalendar(
@@ -93,6 +97,23 @@ async function sendEmail(
   });
 }
 
+async function downloadVideo(
+  videoUrl: string,
+  outputLocationPath: string
+): Promise<void> {
+  const response = await fetch(videoUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch video: ${response.statusText}`);
+  }
+
+  const writer: fs.WriteStream = fs.createWriteStream(outputLocationPath);
+  if (!response.body) {
+    throw new Error("Failed to fetch video: Response body is empty");
+  }
+  const nodeStream: Readable = Readable.fromWeb(response.body as any);
+  await finished(nodeStream.pipe(writer));
+}
+
 export const eventHandlers: Record<string, EventHandler> = {
   GOOGLE_CALENDAR: {
     checkTrigger: async (
@@ -129,6 +150,71 @@ export const eventHandlers: Record<string, EventHandler> = {
             );
 
           return newEvents && newEvents.length > 0;
+        }
+
+        case "Event deleted": {
+          const now = new Date();
+          const oneMinuteAgo: string = new Date(
+            now.getTime() - 1 * 60000
+          ).toISOString();
+
+          const response: GaxiosResponse<calendar_v3.Schema$Events> =
+            await calendar.events.list({
+              calendarId: actionData.calendar,
+              showDeleted: true,
+              singleEvents: true,
+              orderBy: "startTime",
+            });
+
+          const deletedEvents: calendar_v3.Schema$Event[] | undefined =
+            response.data.items?.filter(
+              (event: calendar_v3.Schema$Event): boolean => {
+                if (
+                  !event.updated ||
+                  !event.status ||
+                  event.status !== "cancelled"
+                ) {
+                  return false;
+                }
+                const updatedTime: number = new Date(event.updated).getTime();
+                return updatedTime >= new Date(oneMinuteAgo).getTime();
+              }
+            );
+
+          return deletedEvents && deletedEvents.length > 0;
+        }
+
+        case "Event modified": {
+          const now = new Date();
+          const oneMinuteAgo: string = new Date(
+            now.getTime() - 1 * 60000
+          ).toISOString();
+
+          const response: GaxiosResponse<calendar_v3.Schema$Events> =
+            await calendar.events.list({
+              calendarId: actionData.calendar,
+              singleEvents: true,
+              orderBy: "startTime",
+            });
+
+          const modifiedEvents: calendar_v3.Schema$Event[] | undefined =
+            response.data.items?.filter(
+              (event: calendar_v3.Schema$Event): boolean => {
+                if (!event.updated || event.status === "cancelled") {
+                  return false;
+                }
+                const updatedTime: number = new Date(event.updated).getTime();
+                const createdTime: number = event.created
+                  ? new Date(event.created).getTime()
+                  : 0;
+                return (
+                  updatedTime >= new Date(oneMinuteAgo).getTime() &&
+                  updatedTime !== createdTime
+                );
+              }
+            );
+
+          return modifiedEvents && modifiedEvents.length > 0;
         }
 
         default:
@@ -178,21 +264,21 @@ export const eventHandlers: Record<string, EventHandler> = {
       service: Service,
       actionData: any,
       actionId: number
-    ): Promise<string> => {
+    ): Promise<[string, string]> => {
       const auth: OAuth2Client = googleAuth(service);
       const calendar = google.calendar({ version: "v3", auth });
-
+      const id: string = `calendar-watch-${service.userId}-${actionId}-${Date.now()}`;
       const response: GaxiosResponse<calendar_v3.Schema$Channel> =
         await calendar.events.watch({
           calendarId: actionData.calendar,
           requestBody: {
-            id: `calendar-watch-${service.userId}-${actionId}`,
+            id: id,
             type: "web_hook",
             address: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhook/google_calendar`,
           },
         });
 
-      return response.data.resourceId!;
+      return [response.data.resourceId!, id];
     },
   },
   GMAIL: {
@@ -222,6 +308,42 @@ export const eventHandlers: Record<string, EventHandler> = {
 
         default:
           console.error(`Unknown GMAIL reaction: ${reaction.name}`);
+      }
+    },
+  },
+  YOUTUBE: {
+    executeReaction: async (
+      reaction: Reaction,
+      reactionData: any,
+      service: Service
+    ): Promise<void> => {
+      const auth: OAuth2Client = googleAuth(service);
+      const youtube = google.youtube({ version: "v3", auth });
+
+      if (reaction.name === "Upload video from URL") {
+        console.log("Uploading video from URL:", reactionData.videoUrl);
+        const videoPath: string = path.join(__dirname, "temp_video.mp4");
+        await downloadVideo(reactionData.videoUrl, videoPath);
+
+        await youtube.videos.insert({
+          part: ["snippet", "status"],
+          requestBody: {
+            snippet: {
+              title: reactionData.title,
+              description: reactionData.description,
+            },
+            status: {
+              privacyStatus: "public",
+            },
+          },
+          media: {
+            body: fs.createReadStream(videoPath),
+          },
+        });
+
+        fs.unlinkSync(videoPath);
+      } else {
+        console.error(`Unknown YouTube reaction: ${reaction.name}`);
       }
     },
   },

@@ -29,8 +29,20 @@ export async function handleGoogleCalendarAction(
     );
   }
 
+  const calendarOptions: Option[] = calendars.map(
+    (calendar: {
+      id: string | null | undefined;
+      name: string | null | undefined;
+    }): Option => ({
+      value: calendar.id!,
+      label: calendar.name!,
+    })
+  );
+
   switch (action) {
-    case "New event added": {
+    case "New event added":
+    case "Event deleted":
+    case "Event modified":
       return NextResponse.json({
         actionName: action,
         parameters: [
@@ -38,21 +50,12 @@ export async function handleGoogleCalendarAction(
             name: "calendar",
             label: "Which calendar?",
             type: "select",
-            options: calendars.map(
-              (calendar: {
-                id: string | null | undefined;
-                name: string | null | undefined;
-              }): Option => ({
-                value: calendar.id!,
-                label: calendar.name!,
-              })
-            ),
+            options: calendarOptions,
           },
         ],
       });
-    }
 
-    case "Quick add event": {
+    case "Quick add event":
       return NextResponse.json({
         actionName: action,
         parameters: [
@@ -60,15 +63,7 @@ export async function handleGoogleCalendarAction(
             name: "calendar",
             label: "Which calendar?",
             type: "select",
-            options: calendars.map(
-              (calendar: {
-                id: string | null | undefined;
-                name: string | null | undefined;
-              }): Option => ({
-                value: calendar.id!,
-                label: calendar.name!,
-              })
-            ),
+            options: calendarOptions,
           },
           {
             name: "quickAddText",
@@ -77,9 +72,8 @@ export async function handleGoogleCalendarAction(
           },
         ],
       });
-    }
 
-    case "Create a detailed event": {
+    case "Create a detailed event":
       return NextResponse.json({
         actionName: action,
         parameters: [
@@ -87,15 +81,7 @@ export async function handleGoogleCalendarAction(
             name: "calendar",
             label: "Which calendar?",
             type: "select",
-            options: calendars.map(
-              (calendar: {
-                id: string | null | undefined;
-                name: string | null | undefined;
-              }): Option => ({
-                value: calendar.id!,
-                label: calendar.name!,
-              })
-            ),
+            options: calendarOptions,
           },
           {
             name: "startTime",
@@ -119,7 +105,6 @@ export async function handleGoogleCalendarAction(
           },
         ],
       });
-    }
 
     default:
       return NextResponse.json({ detail: "Invalid action" }, { status: 400 });

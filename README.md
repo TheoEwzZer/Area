@@ -37,6 +37,8 @@ The project is built using the following technologies:
 #### Google Calendar Actions
 
 - **New event added**: This trigger fires every time a new event is added to your Google Calendar.
+- **Event deleted**: This trigger fires every time an event is deleted from your Google Calendar.
+- **Event modified**: This trigger fires every time an event is modified in your Google Calendar.
 
 #### Google Calendar Reactions
 
@@ -44,11 +46,6 @@ The project is built using the following technologies:
 - **Create a detailed event**: This action will create a detailed event in your Google Calendar.
 
 ### YouTube
-
-#### YouTube Actions
-
-- **New liked video**: This trigger fires every time you like a video on YouTube.
-- **You subscribe to a channel**: This trigger fires when a new subscription is made by you, or another specific channel.
 
 #### YouTube Reactions
 

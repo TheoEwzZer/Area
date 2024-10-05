@@ -69,7 +69,7 @@ export async function getUserGuilds(accessToken: string): Promise<any> {
   } catch {
     try {
       const user: User | null = await currentUser();
-      if (!user || !user.id) {
+      if (!user?.id) {
         throw new Error("User not found or user ID is missing");
       }
 
@@ -80,7 +80,7 @@ export async function getUserGuilds(accessToken: string): Promise<any> {
         },
       });
 
-      if (!service || !service.refreshToken) {
+      if (!service?.refreshToken) {
         throw new Error("Discord service or refresh token not found for user");
       }
 

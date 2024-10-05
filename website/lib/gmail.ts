@@ -49,7 +49,11 @@ export async function getGmailAccessToken(): Promise<string> {
 }
 
 function createOAuth2Client(accessToken: string): OAuth2Client {
-  const oAuth2Client = new google.auth.OAuth2();
+  const oAuth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+  );
+
   oAuth2Client.setCredentials({ access_token: accessToken });
   return oAuth2Client;
 }
@@ -78,7 +82,7 @@ export async function getGmailUserAccount(accessToken: string): Promise<{
   } catch {
     try {
       const user: User | null = await currentUser();
-      if (!user || !user.id) {
+      if (!user?.id) {
         throw new Error("User not found or user ID is missing");
       }
 
@@ -89,7 +93,7 @@ export async function getGmailUserAccount(accessToken: string): Promise<{
         },
       });
 
-      if (!service || !service.refreshToken) {
+      if (!service?.refreshToken) {
         throw new Error("Gmail service or refresh token not found for user");
       }
 

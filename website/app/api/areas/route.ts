@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
+import { EventHandler, eventHandlers } from "@/lib/eventManager";
 import { currentUser, User } from "@clerk/nextjs/server";
-import { Action, Area, Reaction, ServiceInfo } from "@prisma/client";
+import { Action, Area, Reaction, Service, ServiceInfo } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 interface AreaWithServiceInfo extends Area {
@@ -73,6 +74,30 @@ export async function POST(req: NextRequest): Promise<
     }
 
     if (user?.id && action.id && reaction.id) {
+      const service: Service | null = await db.service.findFirst({
+        where: {
+          userId: user.id,
+          service: actionService,
+        },
+      });
+
+      if (!service) {
+        return NextResponse.json(
+          { detail: "Service not found" },
+          { status: 404 }
+        );
+      }
+
+      const handler: EventHandler = eventHandlers[actionService];
+      let ressourceWatchId: string = "";
+      if (handler?.setupWebhook) {
+        ressourceWatchId = await handler.setupWebhook(
+          service,
+          actionParameters,
+          action.id
+        );
+      }
+
       const newArea: Area = await db.area.create({
         data: {
           userId: user.id,
@@ -81,6 +106,8 @@ export async function POST(req: NextRequest): Promise<
           actionData: actionParameters,
           reactionData: reactionParameters,
           title: `If ${action.name.toLowerCase()}, then ${reaction.name.toLowerCase()}`,
+          channelWatchId: `calendar-watch-${service.userId}-${action.id}`,
+          ressourceWatchId: ressourceWatchId,
         },
       });
       return NextResponse.json(newArea);
@@ -137,7 +164,6 @@ export async function GET(): Promise<
         reactionServiceInfo: area.reaction.serviceInfo,
       })
     );
-
     return NextResponse.json(areasWithServiceInfo);
   } catch (error) {
     console.error("Error fetching areas:", error);

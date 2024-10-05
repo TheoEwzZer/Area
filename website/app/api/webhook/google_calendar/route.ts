@@ -21,7 +21,9 @@ export async function POST(req: NextRequest): Promise<
         action: Action & {
           serviceInfo: ServiceInfo;
         };
-        reaction: Reaction;
+        reaction: Reaction & {
+          serviceInfo: ServiceInfo;
+        };
       })
     | null = await db.area.findFirst({
     where: {
@@ -34,7 +36,11 @@ export async function POST(req: NextRequest): Promise<
           serviceInfo: true,
         },
       },
-      reaction: true,
+      reaction: {
+        include: {
+          serviceInfo: true,
+        },
+      },
     },
   });
 
@@ -62,7 +68,13 @@ export async function POST(req: NextRequest): Promise<
     );
 
     if (triggerFired) {
-      await handler.executeReaction(area.reaction, area.reactionData, service);
+      const handlerReaction: EventHandler =
+        eventHandlers[area.reaction.serviceInfo.type];
+      await handlerReaction.executeReaction(
+        area.reaction,
+        area.reactionData,
+        service
+      );
       return NextResponse.json({
         detail: "Trigger fired and reaction executed",
       });

@@ -8,8 +8,12 @@ interface BlockItemProps {
   onPress: () => void;
 }
 
-export const BlockItem: React.FC<BlockItemProps> = ({ block, onPress }): ReactElement => {
-  const Icon: (props: any) => ReactElement = block.type === "action" ? Zap : Check;
+export const BlockItem: React.FC<BlockItemProps> = ({
+  block,
+  onPress,
+}): ReactElement => {
+  const Icon: (props: any) => ReactElement =
+    block.type === "action" ? Zap : Check;
 
   return (
     <TouchableOpacity

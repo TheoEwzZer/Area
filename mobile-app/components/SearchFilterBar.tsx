@@ -7,13 +7,16 @@ interface SearchFilterBarProps {
   onItemPress: (item: string) => void;
 }
 
-const SearchFilterBar: React.FC<SearchFilterBarProps> = ({ data, onItemPress }) => {
+const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
+  data,
+  onItemPress,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState(data);
 
   const handleFilter: () => void = useCallback((): void => {
     const filtered = data.filter((item) =>
-      item.toLowerCase().includes(searchQuery.toLowerCase())
+      item.toLowerCase().includes(searchQuery.toLowerCase()),
     );
     setFilteredData(filtered);
   }, [data, searchQuery]);
@@ -41,7 +44,7 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({ data, onItemPress }) 
               >
                 <ThemedText type="default">{item}</ThemedText>
               </TouchableOpacity>
-            )
+            ),
           )
         ) : (
           <ThemedText type="default" style={styles.errorText}>

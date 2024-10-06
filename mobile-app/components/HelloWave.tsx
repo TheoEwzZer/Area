@@ -15,8 +15,11 @@ export function HelloWave(): ReactElement {
   const rotationAnimation: SharedValue<number> = useSharedValue(0);
 
   rotationAnimation.value = withRepeat(
-    withSequence(withTiming(25, { duration: 150 }), withTiming(0, { duration: 150 })),
-    4
+    withSequence(
+      withTiming(25, { duration: 150 }),
+      withTiming(0, { duration: 150 }),
+    ),
+    4,
   );
 
   const animatedStyle: {

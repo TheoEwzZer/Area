@@ -25,7 +25,10 @@ const UserItem: ({
   textColor: string;
 }): ReactElement => (
   <View style={styles.userItem}>
-    <ThemedText type="subtitle" style={{ color: textColor, fontWeight: "bold" }}>
+    <ThemedText
+      type="subtitle"
+      style={{ color: textColor, fontWeight: "bold" }}
+    >
       {user.firstname} {user.lastname}
     </ThemedText>
     <ThemedText type="default" style={{ color: textColor }}>
@@ -38,16 +41,36 @@ const UserItem: ({
 );
 
 const mockUsers: User[] = [
-  { id: 1, firstname: "Jean", lastname: "Dupont", email: "jean.dupont@example.com" },
-  { id: 2, firstname: "Marie", lastname: "Martin", email: "marie.martin@example.com" },
+  {
+    id: 1,
+    firstname: "Jean",
+    lastname: "Dupont",
+    email: "jean.dupont@example.com",
+  },
+  {
+    id: 2,
+    firstname: "Marie",
+    lastname: "Martin",
+    email: "marie.martin@example.com",
+  },
   {
     id: 3,
     firstname: "Pierre",
     lastname: "Bernard",
     email: "pierre.bernard@example.com",
   },
-  { id: 4, firstname: "Sophie", lastname: "Petit", email: "sophie.petit@example.com" },
-  { id: 5, firstname: "Lucas", lastname: "Robert", email: "lucas.robert@example.com" },
+  {
+    id: 4,
+    firstname: "Sophie",
+    lastname: "Petit",
+    email: "sophie.petit@example.com",
+  },
+  {
+    id: 5,
+    firstname: "Lucas",
+    lastname: "Robert",
+    email: "lucas.robert@example.com",
+  },
 ];
 
 export default function UserListingScreen(): ReactElement {
@@ -63,12 +86,15 @@ export default function UserListingScreen(): ReactElement {
     const loadUsers: () => Promise<void> = async (): Promise<void> => {
       try {
         await new Promise(
-          (resolve: (value: unknown) => void): NodeJS.Timeout => setTimeout(resolve, 1000)
+          (resolve: (value: unknown) => void): NodeJS.Timeout =>
+            setTimeout(resolve, 1000),
         );
         setUsers(mockUsers);
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Une erreur est survenue");
+        setError(
+          err instanceof Error ? err.message : "Une erreur est survenue",
+        );
         setLoading(false);
       }
     };
@@ -77,7 +103,9 @@ export default function UserListingScreen(): ReactElement {
 
   if (loading) {
     return (
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { backgroundColor }]}
+      >
         <ActivityIndicator size="large" color={textColor} />
         <ThemedText type="default" style={{ color: textColor, marginTop: 10 }}>
           Chargement des utilisateurs...
@@ -88,7 +116,9 @@ export default function UserListingScreen(): ReactElement {
 
   if (error) {
     return (
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { backgroundColor }]}
+      >
         <ThemedText type="default" style={{ color: textColor }}>
           Erreur: {error}
         </ThemedText>
@@ -104,7 +134,7 @@ export default function UserListingScreen(): ReactElement {
       {users.map(
         (user: User): ReactElement => (
           <UserItem key={user.id} user={user} textColor={textColor} />
-        )
+        ),
       )}
     </ScrollView>
   );

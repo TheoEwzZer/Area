@@ -23,7 +23,9 @@ const Header: ({ textColor }: { textColor: string }) => ReactElement = ({
   textColor: string;
 }): ReactElement => (
   <View style={styles.header}>
-    <Text style={[styles.title, { color: textColor }]}>Create your own AREA</Text>
+    <Text style={[styles.title, { color: textColor }]}>
+      Create your own AREA
+    </Text>
   </View>
 );
 
@@ -78,7 +80,7 @@ export default function WorkflowsScreen(): ReactElement {
                 icon: string;
                 color: string;
               },
-              index: number
+              index: number,
             ): ReactElement => (
               <React.Fragment key={index}>
                 <TouchableOpacity
@@ -88,16 +90,24 @@ export default function WorkflowsScreen(): ReactElement {
                   <Text style={styles.blockText}>{block.text}</Text>
                 </TouchableOpacity>
                 {index < blocks.length - 1 && (
-                  <View style={[styles.connector, { backgroundColor: "#ccc" }]} />
+                  <View
+                    style={[styles.connector, { backgroundColor: "#ccc" }]}
+                  />
                 )}
               </React.Fragment>
-            )
+            ),
           )}
         </View>
       </ScrollView>
 
-      <Modal visible={showServiceModal} animationType="slide" transparent={true}>
-        <TouchableWithoutFeedback onPress={(): void => setShowServiceModal(false)}>
+      <Modal
+        visible={showServiceModal}
+        animationType="slide"
+        transparent={true}
+      >
+        <TouchableWithoutFeedback
+          onPress={(): void => setShowServiceModal(false)}
+        >
           <View style={styles.modalContainer}>
             <TouchableWithoutFeedback onPress={(): void => {}}>
               <View style={styles.modalContent}>
@@ -113,7 +123,9 @@ export default function WorkflowsScreen(): ReactElement {
                       router.push("/link");
                     }}
                   >
-                    <Text style={styles.linkText}>Click here to go to the link page</Text>
+                    <Text style={styles.linkText}>
+                      Click here to go to the link page
+                    </Text>
                   </Pressable>
                 )}
                 {userServices.length > 0 && (
@@ -127,9 +139,11 @@ export default function WorkflowsScreen(): ReactElement {
                             setShowServiceModal(false);
                           }}
                         >
-                          <Text style={styles.modalItemText}>{service.service}</Text>
+                          <Text style={styles.modalItemText}>
+                            {service.service}
+                          </Text>
                         </TouchableOpacity>
-                      )
+                      ),
                     )}
                   </ScrollView>
                 )}

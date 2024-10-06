@@ -53,7 +53,7 @@ const MyAreasPage: () => ReactElement = (): ReactElement => {
 
   const handleToggleConnection: (id: string, value: boolean) => void = (
     id: string,
-    value: boolean
+    value: boolean,
   ): void => {
     setAreas(
       areas.map(
@@ -63,8 +63,8 @@ const MyAreasPage: () => ReactElement = (): ReactElement => {
           isConnected: boolean;
           color: string;
           description: string;
-        }) => (area.id === id ? { ...area, isConnected: value } : area)
-      )
+        }) => (area.id === id ? { ...area, isConnected: value } : area),
+      ),
     );
   };
 
@@ -81,7 +81,7 @@ const MyAreasPage: () => ReactElement = (): ReactElement => {
       isConnected: boolean;
       color: string;
       description: string;
-    }): boolean => area.title.toLowerCase().includes(filter.toLowerCase())
+    }): boolean => area.title.toLowerCase().includes(filter.toLowerCase()),
   );
 
   if (loading) {
@@ -96,7 +96,10 @@ const MyAreasPage: () => ReactElement = (): ReactElement => {
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
       <Text style={[styles.header, { color: textColor }]}>My Areas</Text>
       <TextInput
-        style={[styles.filterInput, { color: textColor, borderColor: textColor }]}
+        style={[
+          styles.filterInput,
+          { color: textColor, borderColor: textColor },
+        ]}
         placeholder="Filter"
         placeholderTextColor={textColor}
         value={filter}
@@ -121,7 +124,7 @@ const MyAreasPage: () => ReactElement = (): ReactElement => {
               }
               color={area.color}
             />
-          )
+          ),
         )}
       </ScrollView>
     </SafeAreaView>

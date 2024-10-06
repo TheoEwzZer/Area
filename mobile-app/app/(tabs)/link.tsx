@@ -24,7 +24,9 @@ export default function WorkflowsScreen(): ReactElement {
         setServices(fetchedServices);
         setLoading(false);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Une erreur est survenue");
+        setError(
+          err instanceof Error ? err.message : "Une erreur est survenue",
+        );
         setLoading(false);
       }
     };
@@ -34,7 +36,9 @@ export default function WorkflowsScreen(): ReactElement {
 
   if (loading) {
     return (
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { backgroundColor }]}
+      >
         <ActivityIndicator size="large" color={textColor} />
         <Text style={{ color: textColor, marginTop: 10 }}>
           Chargement des services...
@@ -45,7 +49,9 @@ export default function WorkflowsScreen(): ReactElement {
 
   if (error) {
     return (
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { backgroundColor }]}
+      >
         <ThemedText type="default" style={{ color: textColor }}>
           Erreur: {error}
         </ThemedText>
@@ -65,12 +71,14 @@ export default function WorkflowsScreen(): ReactElement {
             color={service.color}
             name={service.type}
             imageUrl={service.image_url}
-            actions={service.actions.map((action: Action): string => action.name)}
+            actions={service.actions.map(
+              (action: Action): string => action.name,
+            )}
             reactions={service.reactions.map(
-              (reaction: Reaction): string => reaction.name
+              (reaction: Reaction): string => reaction.name,
             )}
           />
-        )
+        ),
       )}
     </ScrollView>
   );

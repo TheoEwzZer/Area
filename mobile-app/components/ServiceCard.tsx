@@ -35,8 +35,12 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   const renderList: (
     items: string[],
     title: string,
-    emptyMessage: string
-  ) => ReactElement = (items: string[], title: string, emptyMessage: string) => (
+    emptyMessage: string,
+  ) => ReactElement = (
+    items: string[],
+    title: string,
+    emptyMessage: string,
+  ) => (
     <View style={styles.listContainer}>
       <Text style={styles.columnTitle}>{title}</Text>
       {items.length === 0 ? (
@@ -48,7 +52,7 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
               <View style={styles.bullet} />
               <Text style={styles.listItem}>{item}</Text>
             </View>
-          )
+          ),
         )
       )}
     </View>
@@ -65,16 +69,19 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
           {renderList(
             actions,
             actions.length === 1 ? "Action" : "Actions",
-            "Aucune action"
+            "Aucune action",
           )}
           {renderList(
             reactions,
             reactions.length === 1 ? "Reaction" : "Reactions",
-            "Aucune reaction"
+            "Aucune reaction",
           )}
         </ScrollView>
         <View style={styles.connectContainer}>
-          <TouchableOpacity style={styles.connectButton} onPress={handleConnectPress}>
+          <TouchableOpacity
+            style={styles.connectButton}
+            onPress={handleConnectPress}
+          >
             <Text style={[styles.connectButtonText, { color }]}>Connect</Text>
           </TouchableOpacity>
         </View>

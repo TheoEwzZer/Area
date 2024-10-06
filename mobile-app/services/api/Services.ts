@@ -1,14 +1,17 @@
 import { useAuth } from "@clerk/clerk-expo";
 import { Service } from "@/constants/Types";
 
-const API_URL = "https://69d6-2001-861-e3d9-2750-ce1-ab-5bd2-6dea.ngrok-free.app/api";
+const API_URL =
+  "https://69d6-2001-861-e3d9-2750-ce1-ab-5bd2-6dea.ngrok-free.app/api";
 
 export const useServices: () => {
   fetchServices: () => Promise<Service[]>;
 } = () => {
   const { getToken } = useAuth();
 
-  const fetchServices: () => Promise<Service[]> = async (): Promise<Service[]> => {
+  const fetchServices: () => Promise<Service[]> = async (): Promise<
+    Service[]
+  > => {
     const token: string | null = await getToken();
     if (!token) {
       throw new Error("No auth token");

@@ -17,7 +17,8 @@ import { ColorSchemeName } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
 
-const CLERK_PUBLISHABLE_KEY: string = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+const CLERK_PUBLISHABLE_KEY: string =
+  process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 
 const tokenCache = {
   async getToken(key: string): Promise<string | null> {
@@ -62,7 +63,10 @@ export default function RootLayout(): ReactElement {
   const colorScheme: ColorSchemeName = useColorScheme();
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+    <ClerkProvider
+      publishableKey={CLERK_PUBLISHABLE_KEY}
+      tokenCache={tokenCache}
+    >
       <ThemeProvider>
         <NavigationThemeProvider
           value={colorScheme === "dark" ? DarkTheme : DefaultTheme}

@@ -2,7 +2,9 @@ import { ScrollViewStyleReset } from "expo-router/html";
 import React, { ReactElement } from "react";
 import { type PropsWithChildren } from "react";
 
-export default function Root({ children }: Readonly<PropsWithChildren>): ReactElement {
+export default function Root({
+  children,
+}: Readonly<PropsWithChildren>): ReactElement {
   return (
     <html lang="en">
       <head>

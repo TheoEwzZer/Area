@@ -12,7 +12,9 @@ export function ExternalLink({ href, ...rest }: Props): ReactElement {
       {...rest}
       href={href}
       onPress={async (
-        event: GestureResponderEvent | React.MouseEvent<HTMLAnchorElement, MouseEvent>
+        event:
+          | GestureResponderEvent
+          | React.MouseEvent<HTMLAnchorElement, MouseEvent>,
       ): Promise<void> => {
         if (Platform.OS !== "web") {
           event.preventDefault();

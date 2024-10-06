@@ -1,7 +1,8 @@
 import { useAuth } from "@clerk/clerk-expo";
 import { Service } from "@/constants/Types";
 
-const API_URL = "https://69d6-2001-861-e3d9-2750-ce1-ab-5bd2-6dea.ngrok-free.app/api";
+const API_URL =
+  "https://69d6-2001-861-e3d9-2750-ce1-ab-5bd2-6dea.ngrok-free.app/api";
 
 export const useUsers: () => {
   fetchUserServices: (userId: string) => Promise<Service[]>;
@@ -9,7 +10,7 @@ export const useUsers: () => {
   const { getToken } = useAuth();
 
   const fetchUserServices: (userId: string) => Promise<Service[]> = async (
-    userId: string
+    userId: string,
   ): Promise<Service[]> => {
     const token: string | null = await getToken();
     if (!token) {

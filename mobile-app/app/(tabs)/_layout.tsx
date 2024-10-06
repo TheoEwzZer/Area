@@ -1,7 +1,15 @@
 import React, { ReactElement } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Colors } from "@/constants/Colors";
-import { Workflow, Plus, Link, Moon, Sun, DoorOpen, List } from "lucide-react-native";
+import {
+  Workflow,
+  Plus,
+  Link,
+  Moon,
+  Sun,
+  DoorOpen,
+  List,
+} from "lucide-react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/ThemeContext";
 import { Tabs } from "expo-router";
@@ -25,14 +33,27 @@ export default function TabLayout(): ReactElement {
   return (
     <View style={[styles.container, { backgroundColor }]}>
       <View style={[styles.header, { backgroundColor }]}>
-        <ThemedText type="title" style={[styles.headerText, { color: textColor }]}>
+        <ThemedText
+          type="title"
+          style={[styles.headerText, { color: textColor }]}
+        >
           AREA
         </ThemedText>
         <View style={styles.headerRight}>
-          <Pressable onPress={toggleTheme} style={[styles.pressable, { borderColor }]}>
-            {theme === "light" ? <Moon stroke={textColor} /> : <Sun stroke={textColor} />}
+          <Pressable
+            onPress={toggleTheme}
+            style={[styles.pressable, { borderColor }]}
+          >
+            {theme === "light" ? (
+              <Moon stroke={textColor} />
+            ) : (
+              <Sun stroke={textColor} />
+            )}
           </Pressable>
-          <Pressable onPress={handleSignOut} style={[styles.pressable, { borderColor }]}>
+          <Pressable
+            onPress={handleSignOut}
+            style={[styles.pressable, { borderColor }]}
+          >
             <DoorOpen stroke={textColor} />
           </Pressable>
         </View>

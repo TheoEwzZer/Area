@@ -44,7 +44,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
 
   const toggleTheme: () => void = (): void => {
     setTheme((prevTheme: Theme): "light" | "dark" =>
-      prevTheme === "light" ? "dark" : "light"
+      prevTheme === "light" ? "dark" : "light",
     );
   };
 
@@ -53,7 +53,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     toggleTheme: () => void;
   } = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
 
-  return <ThemeContext.Provider value={contextValue}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={contextValue}>
+      {children}
+    </ThemeContext.Provider>
+  );
 };
 
 export const useTheme: () => ThemeContextType = (): ThemeContextType => {

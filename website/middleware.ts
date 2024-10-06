@@ -34,13 +34,10 @@ export default clerkMiddleware(
 
     if (!isPublicRoute(request)) {
       const userId: string | null = auth().userId;
-      console.log("userId", userId);
-      console.log(1);
       if (!userId) {
         url.pathname = "/sign-in";
         return NextResponse.redirect(url);
       }
-      console.log(2);
 
       const isAdmin: boolean = auth().sessionClaims?.metadata.role === "admin";
 
@@ -49,8 +46,7 @@ export default clerkMiddleware(
         return NextResponse.redirect(url);
       }
     }
-  },
-  { debug: true }
+  }
 );
 
 export const config = {

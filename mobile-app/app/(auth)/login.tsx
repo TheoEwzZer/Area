@@ -1,27 +1,29 @@
-import { ThemedText } from '@/components/ThemedText';
-import { useSignIn, useUser } from '@clerk/clerk-expo';
-import { Link } from 'expo-router';
-import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, Pressable, Text } from 'react-native';
-import Spinner from 'react-native-loading-spinner-overlay';
+import { ThemedText } from "@/components/ThemedText";
+import { useSignIn } from "@clerk/clerk-expo";
+import { Link } from "expo-router";
+import React, { ReactElement, useState } from "react";
+import { View, StyleSheet, TextInput, Pressable, Text } from "react-native";
+import Spinner from "react-native-loading-spinner-overlay";
 
-const handleError = (error: any) => {
-  const errorMessage = error.errors?.[0]?.message || 'An error occurred';
+const handleError: (error: any) => void = (error: any): void => {
+  const errorMessage: any = error.errors?.[0]?.message || "An error occurred";
   alert(errorMessage);
 };
 
-const Login: React.FC = () => {
+const Login: () => ReactElement = (): ReactElement => {
   const { signIn, setActive, isLoaded } = useSignIn();
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const onSignInPress = async () => {
-    if (!isLoaded) return;
+  const onSignInPress: () => Promise<void> = async (): Promise<void> => {
+    if (!isLoaded) {
+      return;
+    }
 
     setLoading(true);
     try {
-      const completeSignIn = await signIn.create({
+      const completeSignIn: any = await signIn.create({
         identifier: emailAddress,
         password,
       });
@@ -55,12 +57,16 @@ const Login: React.FC = () => {
       </Pressable>
       <Link href="/reset" asChild>
         <Pressable style={styles.button}>
-          <ThemedText type='default' lightColor='yes'>Forgot password?</ThemedText>
+          <ThemedText type="default" lightColor="yes">
+            Forgot password?
+          </ThemedText>
         </Pressable>
       </Link>
       <Link href="/register" asChild>
         <Pressable style={styles.button}>
-          <ThemedText type='default' lightColor='yes'>Create Account</ThemedText>
+          <ThemedText type="default" lightColor="yes">
+            Create Account
+          </ThemedText>
         </Pressable>
       </Link>
     </View>
@@ -70,31 +76,31 @@ const Login: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
   },
   inputField: {
     marginVertical: 4,
     height: 50,
     borderWidth: 1,
-    borderColor: '#0A0A0A',
+    borderColor: "#0A0A0A",
     borderRadius: 5,
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   button: {
     margin: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonLogin: {
     marginVertical: 4,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: "#0A0A0A",
     padding: 10,
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
 });

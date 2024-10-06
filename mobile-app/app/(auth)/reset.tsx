@@ -1,19 +1,26 @@
-import { View, StyleSheet, TextInput, Pressable, Text, GestureResponderEvent } from 'react-native';
-import React, { useState } from 'react';
-import { Stack } from 'expo-router';
-import { useSignIn } from '@clerk/clerk-expo';
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  Text,
+  GestureResponderEvent,
+} from "react-native";
+import React, { ReactElement, useState } from "react";
+import { Stack } from "expo-router";
+import { useSignIn } from "@clerk/clerk-expo";
 
-const PwReset = () => {
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
+const PwReset: () => ReactElement = (): ReactElement => {
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [successfulCreation, setSuccessfulCreation] = useState(false);
   const { signIn, setActive } = useSignIn();
 
-  const onRequestReset = async () => {
+  const onRequestReset: () => Promise<void> = async (): Promise<void> => {
     try {
       await signIn?.create({
-        strategy: 'reset_password_email_code',
+        strategy: "reset_password_email_code",
         identifier: emailAddress,
       });
       setSuccessfulCreation(true);
@@ -22,14 +29,14 @@ const PwReset = () => {
     }
   };
 
-  const onReset = async () => {
+  const onReset: () => Promise<void> = async (): Promise<void> => {
     try {
-      const result = await signIn?.attemptFirstFactor({
-        strategy: 'reset_password_email_code',
+      const result: any = await signIn?.attemptFirstFactor({
+        strategy: "reset_password_email_code",
         code,
         password,
       });
-      alert('Password reset successfully');
+      alert("Password reset successfully");
 
       await setActive!({ session: result?.createdSessionId });
     } catch (err: any) {
@@ -43,7 +50,7 @@ const PwReset = () => {
     } else {
       onReset();
     }
-  }  
+  }
 
   return (
     <View style={styles.container}>
@@ -51,7 +58,13 @@ const PwReset = () => {
 
       {!successfulCreation && (
         <>
-          <TextInput autoCapitalize="none" placeholder="email@email.com" value={emailAddress} onChangeText={setEmailAddress} style={styles.inputField} />
+          <TextInput
+            autoCapitalize="none"
+            placeholder="email@email.com"
+            value={emailAddress}
+            onChangeText={setEmailAddress}
+            style={styles.inputField}
+          />
 
           <Pressable onPress={onPressVerify} style={styles.button}>
             <Text style={styles.buttonText}>Send Reset Email</Text>
@@ -62,8 +75,19 @@ const PwReset = () => {
       {successfulCreation && (
         <>
           <View>
-            <TextInput value={code} placeholder="Code..." style={styles.inputField} onChangeText={setCode} />
-            <TextInput placeholder="New password" value={password} onChangeText={setPassword} secureTextEntry style={styles.inputField} />
+            <TextInput
+              value={code}
+              placeholder="Code..."
+              style={styles.inputField}
+              onChangeText={setCode}
+            />
+            <TextInput
+              placeholder="New password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              style={styles.inputField}
+            />
           </View>
           <Pressable onPress={onPressVerify} style={styles.button}>
             <Text style={styles.buttonText}>Set New Password</Text>
@@ -77,27 +101,27 @@ const PwReset = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
   },
   inputField: {
     marginVertical: 4,
     height: 50,
     borderWidth: 1,
-    borderColor: '#0A0A0A',
+    borderColor: "#0A0A0A",
     borderRadius: 4,
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   button: {
     marginVertical: 4,
-    alignItems: 'center',
-    backgroundColor: '#0A0A0A',
+    alignItems: "center",
+    backgroundColor: "#0A0A0A",
     padding: 10,
     borderRadius: 5,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
 });

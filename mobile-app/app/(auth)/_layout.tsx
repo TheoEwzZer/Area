@@ -1,7 +1,7 @@
-import React from 'react';
-import { Stack } from 'expo-router';
+import React, { ReactElement } from "react";
+import { Stack } from "expo-router";
 
-const AuthLayout: React.FC = () => {
+const AuthLayout: () => ReactElement = (): ReactElement => {
   return <Stack />;
 };
 

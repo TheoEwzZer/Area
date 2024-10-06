@@ -1,7 +1,19 @@
-import React from 'react';
-import { View, Text, StyleSheet, Switch } from 'react-native';
+import React, { ReactElement } from "react";
+import { View, Text, StyleSheet, Switch } from "react-native";
 
-const AreaCard = ({ title, description, isConnected, onToggleConnection, color }: { title: string, description: string, isConnected: boolean, onToggleConnection: () => void, color: string }) => {
+const AreaCard = ({
+  title,
+  description,
+  isConnected,
+  onToggleConnection,
+  color,
+}: {
+  title: string;
+  description: string;
+  isConnected: boolean;
+  onToggleConnection: () => void;
+  color: string;
+}): ReactElement => {
   return (
     <View style={[styles.card, { borderColor: color }]}>
       <View style={styles.header}>
@@ -23,7 +35,7 @@ const AreaCard = ({ title, description, isConnected, onToggleConnection, color }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     padding: 16,
     marginHorizontal: 20,
@@ -39,18 +51,18 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 8,
   },
   colorBar: {

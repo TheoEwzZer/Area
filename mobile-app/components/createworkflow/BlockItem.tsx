@@ -1,19 +1,25 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Zap, Check } from 'react-native-feather';
-import { Block } from '@/constants/Types';
+import React, { ReactElement } from "react";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { Zap, Check } from "react-native-feather";
+import { Block } from "@/constants/Types";
 
 interface BlockItemProps {
   block: Block;
   onPress: () => void;
 }
 
-export const BlockItem: React.FC<BlockItemProps> = ({ block, onPress }) => {
-  const Icon = block.type === 'action' ? Zap : Check;
-  
+export const BlockItem: React.FC<BlockItemProps> = ({ block, onPress }): ReactElement => {
+  const Icon: (props: any) => ReactElement = block.type === "action" ? Zap : Check;
+
   return (
     <TouchableOpacity
-      style={[styles.block, { backgroundColor: block.color || (block.type === 'action' ? '#EF4444' : '#F59E0B') }]}
+      style={[
+        styles.block,
+        {
+          backgroundColor:
+            block.color ?? (block.type === "action" ? "#EF4444" : "#F59E0B"),
+        },
+      ]}
       onPress={onPress}
     >
       <Text style={styles.blockType}>{block.type}</Text>
@@ -25,21 +31,21 @@ export const BlockItem: React.FC<BlockItemProps> = ({ block, onPress }) => {
 
 const styles = StyleSheet.create({
   block: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 8,
     marginBottom: 16,
   },
   blockType: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginRight: 16,
   },
   blockText: {
     fontSize: 16,
-    color: '#fff',
+    color: "#fff",
     marginLeft: 16,
   },
 });

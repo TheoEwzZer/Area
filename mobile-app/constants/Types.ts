@@ -1,7 +1,7 @@
-import { ServiceType } from '@prisma/client';
+import { ReactNode } from "react";
 
 export interface Block {
-  type: 'action' | 'reaction';
+  type: "action" | "reaction";
   text: string;
   icon: string;
   service?: string;

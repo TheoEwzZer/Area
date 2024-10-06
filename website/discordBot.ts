@@ -14,20 +14,18 @@ import {
 import { db } from "./lib/db";
 import { AreaWithDetails } from "./types/globals";
 
-export let discordClient: Client<boolean> | null = null;
+export const discordClient: Client<boolean> = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageReactions,
+  ],
+});
 
 export async function initDiscordBot(): Promise<void> {
   try {
-    discordClient = new Client({
-      intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessageReactions,
-      ],
-    });
-
     const handleMessage: (
       message: Message | PartialMessage,
       actionName: string

@@ -16,9 +16,12 @@ const isAdminRoute: (req: NextRequest) => boolean = createRouteMatcher([
 export default clerkMiddleware(
   (auth: ClerkMiddlewareAuth, request: NextRequest): NextResponse | void => {
     const url: NextURL = request.nextUrl;
-    request.headers.append('Access-Control-Allow-Credentials', "true")
-    request.headers.append('Access-Control-Allow-Origin', '*')
-    request.headers.append('Access-Control-Allow-Methods', 'GET,DELETE,PATCH,POST,PUT')
+    request.headers.append("Access-Control-Allow-Credentials", "true");
+    request.headers.append("Access-Control-Allow-Origin", "*");
+    request.headers.append(
+      "Access-Control-Allow-Methods",
+      "GET,DELETE,PATCH,POST,PUT"
+    );
     if (url.pathname === "/") {
       if (auth().userId) {
         url.pathname = "/create";

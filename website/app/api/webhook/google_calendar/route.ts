@@ -1,16 +1,8 @@
 import { db } from "@/lib/db";
 import { EventHandler, eventHandlers } from "@/lib/eventManager";
-import { Action, Area, Reaction, Service, ServiceInfo } from "@prisma/client";
+import { AreaWithDetails } from "@/types/globals";
+import { Service } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-interface AreaWithDetails extends Area {
-  action: Action & {
-    serviceInfo: ServiceInfo;
-  };
-  reaction: Reaction & {
-    serviceInfo: ServiceInfo;
-  };
-}
 
 export async function POST(
   req: NextRequest

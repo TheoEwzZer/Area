@@ -89,14 +89,17 @@ export async function POST(req: NextRequest): Promise<
       }
 
       const handler: EventHandler = eventHandlers[actionService];
-      let ressourceWatchId: string = "";
-      let channelWatchId: string = "";
+      let ressourceWatchId: string | null = null;
+      let channelWatchId: string | null = null;
       if (handler?.setupWebhook) {
-        [ressourceWatchId, channelWatchId] = await handler.setupWebhook(
+        const result: [string, string] | null = await handler.setupWebhook(
           service,
           actionParameters,
           action.id
         );
+        if (result) {
+          [ressourceWatchId, channelWatchId] = result;
+        }
       }
 
       const newArea: Area = await db.area.create({

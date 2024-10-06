@@ -22,6 +22,8 @@ export async function handleDiscordAction(
   switch (action) {
     case "New pinned message in channel":
     case "New message in channel":
+    case "Reaction added to message":
+    case "Message deleted in channel":
       return NextResponse.json({
         actionName: action,
         parameters: [
@@ -41,6 +43,25 @@ export async function handleDiscordAction(
             label: "Select Channel",
             type: "select",
             options: [],
+          },
+        ],
+      });
+
+    case "New member in guild":
+    case "Member left guild":
+      return NextResponse.json({
+        actionName: action,
+        parameters: [
+          {
+            name: "guild",
+            label: "Select Discord Server",
+            type: "select",
+            options: commonGuilds.map(
+              (guild: any): Option => ({
+                value: guild.id,
+                label: guild.name,
+              })
+            ),
           },
         ],
       });

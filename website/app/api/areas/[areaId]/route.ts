@@ -103,7 +103,11 @@ export async function DELETE(
     });
 
     if (service && area.channelWatchId && area.ressourceWatchId) {
-      await stopWatchCalendar(service, area.channelWatchId, area.ressourceWatchId);
+      await stopWatchCalendar(
+        service,
+        area.channelWatchId,
+        area.ressourceWatchId
+      );
     }
 
     await db.area.delete({

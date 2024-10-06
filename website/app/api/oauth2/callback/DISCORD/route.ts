@@ -26,7 +26,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
         client_id: clientId,
         client_secret: clientSecret,
         grant_type: "authorization_code",
-        code: code as string,
+        code: code,
         redirect_uri: redirectUri,
       }),
     });

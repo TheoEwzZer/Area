@@ -26,6 +26,11 @@ The project is built using the following technologies:
 
 - **New pinned message in channel**: This trigger fires when a new message is pinned in a channel you select.
 - **New message in channel**: This trigger fires when a new message is posted in a channel you select.
+- **New pinned message in channel**: This trigger fires when a new message is pinned in a channel you select.
+- **Reaction added to message**: This trigger fires when a reaction is added to a in a channel you select.
+- **Message deleted in channel**: This trigger fires when a message is deleted in a channel you select.
+- **New member in guild**: This trigger is activated when a new member joins a guild you have selected.
+- **Member left guild**: This trigger is activated when a member leaves a guild you have selected.
 
 #### Discord Reactions
 

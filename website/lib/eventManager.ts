@@ -1,4 +1,6 @@
+import { discordClient } from "@/discordBot";
 import { Action, Reaction, Service } from "@prisma/client";
+import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
 import * as fs from "fs";
 import { GaxiosResponse } from "gaxios";
 import { OAuth2Client } from "google-auth-library";
@@ -22,7 +24,7 @@ export interface EventHandler {
     service: Service,
     actionData: any,
     actionId: number
-  ) => Promise<[string, string]>;
+  ) => Promise<[string, string] | null>;
 }
 
 export async function stopWatchCalendar(
@@ -112,6 +114,49 @@ async function downloadVideo(
   }
   const nodeStream: Readable = Readable.fromWeb(response.body as any);
   await finished(nodeStream.pipe(writer));
+}
+
+async function postDiscordMessage(
+  channelId: string,
+  message: string
+): Promise<void> {
+  if (!discordClient) {
+    throw new Error("Discord client not initialized");
+  }
+
+  const channel = discordClient.channels.cache.get(channelId) as TextChannel;
+  if (!channel) {
+    throw new Error("Channel not found");
+  }
+
+  await channel.send(message);
+}
+
+async function postDiscordRichMessage(
+  channelId: string,
+  embedData: {
+    title: string;
+    description: string;
+    footer: string;
+    color: string;
+  }
+): Promise<void> {
+  if (!discordClient) {
+    throw new Error("Discord client not initialized");
+  }
+
+  const channel = discordClient.channels.cache.get(channelId) as TextChannel;
+  if (!channel) {
+    throw new Error("Channel not found");
+  }
+
+  const embed: EmbedBuilder = new EmbedBuilder()
+    .setTitle(embedData.title)
+    .setDescription(embedData.description)
+    .setFooter({ text: embedData.footer })
+    .setColor(embedData.color as ColorResolvable);
+
+  await channel.send({ embeds: [embed] });
 }
 
 export const eventHandlers: Record<string, EventHandler> = {
@@ -264,7 +309,7 @@ export const eventHandlers: Record<string, EventHandler> = {
       service: Service,
       actionData: any,
       actionId: number
-    ): Promise<[string, string]> => {
+    ): Promise<[string, string] | null> => {
       const auth: OAuth2Client = googleAuth(service);
       const calendar = google.calendar({ version: "v3", auth });
       const id: string = `calendar-watch-${service.userId}-${actionId}-${Date.now()}`;
@@ -321,7 +366,6 @@ export const eventHandlers: Record<string, EventHandler> = {
       const youtube = google.youtube({ version: "v3", auth });
 
       if (reaction.name === "Upload video from URL") {
-        console.log("Uploading video from URL:", reactionData.videoUrl);
         const videoPath: string = path.join(__dirname, "temp_video.mp4");
         await downloadVideo(reactionData.videoUrl, videoPath);
 
@@ -344,6 +388,31 @@ export const eventHandlers: Record<string, EventHandler> = {
         fs.unlinkSync(videoPath);
       } else {
         console.error(`Unknown YouTube reaction: ${reaction.name}`);
+      }
+    },
+  },
+  DISCORD: {
+    executeReaction: async (
+      reaction: Reaction,
+      reactionData: any,
+      _service: Service
+    ): Promise<void> => {
+      switch (reaction.name) {
+        case "Post a message to a channel":
+          await postDiscordMessage(reactionData.channel, reactionData.message);
+          break;
+
+        case "Post a rich message to a channel":
+          await postDiscordRichMessage(reactionData.channel, {
+            title: reactionData.embedTitle,
+            description: reactionData.embedDescription,
+            footer: reactionData.embedFooter,
+            color: reactionData.embedColor,
+          });
+          break;
+
+        default:
+          console.error(`Unknown Discord reaction: ${reaction.name}`);
       }
     },
   },

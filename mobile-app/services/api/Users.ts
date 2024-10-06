@@ -3,17 +3,17 @@ import { Service } from '@/constants/Types';
 
 const API_URL = 'https://69d6-2001-861-e3d9-2750-ce1-ab-5bd2-6dea.ngrok-free.app/api';
 
-export const useServices = () => {
+export const useUsers = () => {
   const { getToken } = useAuth();
 
-  const fetchServices = async (): Promise<Service[]> => {
+  const fetchUserServices = async (userId: string): Promise<Service[]> => {
     try {
       const token = await getToken();
       if (!token) {
         throw new Error('No auth token');
       }
 
-      const response = await fetch(`${API_URL}/services`, {
+      const response = await fetch(`${API_URL}/users/${userId}/services`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -35,5 +35,5 @@ export const useServices = () => {
     }
   };
 
-  return { fetchServices };
+  return { fetchUserServices };
 };

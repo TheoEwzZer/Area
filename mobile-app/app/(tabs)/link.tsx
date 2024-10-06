@@ -1,68 +1,82 @@
-import React from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { useTheme } from '@/hooks/ThemeContext';
 import { Colors } from '@/constants/Colors';
 import { ServiceCard } from '@/components/ServiceCard';
 import { ThemedText } from '@/components/ThemedText';
-
-// Mockdata for tests
-const mockData = [
-    {
-        color: "#FF4400",
-        name: "IFTTT Service",
-        oauthLink: "https://ifttt.com/oauth",
-        actions: ["Action 1", "Action 2", "Action 3", "Action 4"],
-        reactions: ["Réaction 1", "Réaction 2"]
-    },
-    {
-        color: "#00FF44",
-        name: "Zapier Service",
-        oauthLink: "https://zapier.com/oauth",
-        actions: ["Action A", "Action B", "Action C"],
-        reactions: ["Réaction X", "Réaction Y"]
-    },
-    {
-        color: "#4400FF",
-        name: "Microsoft Flow",
-        oauthLink: "https://flow.microsoft.com/oauth",
-        actions: ["Action 1", "Action 2"],
-        reactions: ["Réaction 1", "Réaction 2", "Réaction 3"]
-    }
-];
+import { useServices } from '@/services/api/Services';
+import { Service } from '@/constants/Types';
 
 export default function WorkflowsScreen() {
-    const { theme } = useTheme();
-    const textColor = Colors[theme].text;
-    const backgroundColor = Colors[theme].background;
+  const { theme } = useTheme();
+  const { fetchServices } = useServices();
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  const textColor = Colors[theme].text;
+  const backgroundColor = Colors[theme].background;
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const fetchedServices = await fetchServices();
+        setServices(fetchedServices);
+        setLoading(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+        setLoading(false);
+      }
+    };
+
+    loadServices();
+  }, []);
+
+  if (loading) {
     return (
-        <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
-            <ThemedText type="title" style={[styles.title, { color: textColor }]}>
-                Connect your services
-            </ThemedText>
-            {mockData.map((service, index) => (
-                <ServiceCard
-                    key={index}
-                    color={service.color}
-                    name={service.name}
-                    oauthLink={service.oauthLink}
-                    actions={service.actions}
-                    reactions={service.reactions}
-                />
-            ))}
-        </ScrollView>
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+        <ActivityIndicator size="large" color={textColor} />
+        <Text style={{ color: textColor, marginTop: 10 }}>Chargement des services...</Text>
+      </ScrollView>
     );
+  }
+
+  if (error) {
+    return (
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+        <ThemedText type="default" style={{ color: textColor }}>Erreur: {error}</ThemedText>
+      </ScrollView>
+    );
+  }
+
+  return (
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
+      <ThemedText type="title" style={[styles.title, { color: textColor }]}>
+        Connect your services
+      </ThemedText>
+      {services.map((service) => (
+        <ServiceCard
+          key={service.id}
+          color={service.color}
+          name={service.type}
+          imageUrl={service.image_url}
+          actions={service.actions.map(action => action.name)}
+          reactions={service.reactions.map(reaction => reaction.name)}
+        />
+      ))}
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 16,
-        paddingBottom: 16,
-    },
-    title: {
-        marginBottom: 16,
-    },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  title: {
+    marginBottom: 16,
+  },
 });

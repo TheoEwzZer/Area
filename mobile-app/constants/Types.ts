@@ -24,6 +24,7 @@ export interface Reaction {
 }
 
 export interface Service {
+  service: ReactNode;
   id: number;
   type: string;
   color: string;

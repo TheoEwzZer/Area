@@ -1,5 +1,8 @@
 import React, { ReactElement } from "react";
 import { View, Text, StyleSheet, Switch } from "react-native";
+import { useTheme } from "@/hooks/ThemeContext"; // Import the useTheme hook
+import { Colors } from "@/constants/Colors";
+import { ThemedText } from "./ThemedText";
 
 const AreaCard = ({
   title,
@@ -14,10 +17,14 @@ const AreaCard = ({
   onToggleConnection: () => void;
   color: string;
 }): ReactElement => {
+  const { theme } = useTheme();
+  const backgroundColor = Colors[theme].background;
+  const textColor = Colors[theme].text;
+
   return (
-    <View style={[styles.card, { borderColor: color }]}>
+    <View style={[styles.card, { borderColor: color, backgroundColor }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <ThemedText type="subtitle" style={{ color: textColor }}>{title}</ThemedText>
         <Switch
           value={isConnected}
           onValueChange={onToggleConnection}
@@ -25,9 +32,9 @@ const AreaCard = ({
           thumbColor={isConnected ? "#f5dd4b" : "#f4f3f4"}
         />
       </View>
-      <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+      <ThemedText type="default" style={[styles.description, { color: textColor }]} numberOfLines={2} ellipsizeMode="tail">
         {description}
-      </Text>
+      </ThemedText>
       <View style={[styles.colorBar, { backgroundColor: color }]} />
     </View>
   );
@@ -35,7 +42,6 @@ const AreaCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "white",
     borderRadius: 8,
     padding: 16,
     marginHorizontal: 20,
@@ -56,13 +62,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 8,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
   description: {
-    fontSize: 14,
-    color: "#666",
     marginBottom: 8,
   },
   colorBar: {

@@ -3,13 +3,8 @@ import { ScrollView, View, StyleSheet, ActivityIndicator } from "react-native";
 import { useTheme } from "@/hooks/ThemeContext";
 import { Colors } from "@/constants/Colors";
 import { ThemedText } from "@/components/ThemedText";
-
-type User = {
-  id: number;
-  firstname: string;
-  lastname: string;
-  email: string;
-};
+import { User } from "@/constants/Types";
+import SearchFilterBar from "@/components/SearchFilterBar";
 
 const UserItem: ({
   user,
@@ -29,7 +24,7 @@ const UserItem: ({
       type="subtitle"
       style={{ color: textColor, fontWeight: "bold" }}
     >
-      {user.firstname} {user.lastname}
+      {user.firstName} {user.lastName}
     </ThemedText>
     <ThemedText type="default" style={{ color: textColor }}>
       ID: {user.id}
@@ -42,33 +37,33 @@ const UserItem: ({
 
 const mockUsers: User[] = [
   {
-    id: 1,
-    firstname: "Jean",
-    lastname: "Dupont",
+    id: "1",
+    firstName: "Jean",
+    lastName: "Dupont",
     email: "jean.dupont@example.com",
   },
   {
-    id: 2,
-    firstname: "Marie",
-    lastname: "Martin",
+    id: "2",
+    firstName: "Marie",
+    lastName: "Martin",
     email: "marie.martin@example.com",
   },
   {
-    id: 3,
-    firstname: "Pierre",
-    lastname: "Bernard",
+    id: "3",
+    firstName: "Pierre",
+    lastName: "Bernard",
     email: "pierre.bernard@example.com",
   },
   {
-    id: 4,
-    firstname: "Sophie",
-    lastname: "Petit",
+    id: "4",
+    firstName: "Sophie",
+    lastName: "Petit",
     email: "sophie.petit@example.com",
   },
   {
-    id: 5,
-    firstname: "Lucas",
-    lastname: "Robert",
+    id: "5",
+    firstName: "Lucas",
+    lastName: "Robert",
     email: "lucas.robert@example.com",
   },
 ];
@@ -76,8 +71,10 @@ const mockUsers: User[] = [
 export default function UserListingScreen(): ReactElement {
   const { theme } = useTheme();
   const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState<string>("");
 
   const textColor: string = Colors[theme].text;
   const backgroundColor: string = Colors[theme].background;
@@ -90,6 +87,7 @@ export default function UserListingScreen(): ReactElement {
             setTimeout(resolve, 1000),
         );
         setUsers(mockUsers);
+        setFilteredUsers(mockUsers);
         setLoading(false);
       } catch (err) {
         setError(
@@ -101,16 +99,20 @@ export default function UserListingScreen(): ReactElement {
     loadUsers();
   }, []);
 
+  useEffect(() => {
+    const filtered = users.filter((user) =>
+      `${user.id} ${user.firstName} ${user.lastName} ${user.email}`
+        .toLowerCase()
+        .includes(searchText.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  }, [searchText, users]);
+
   if (loading) {
     return (
-      <ScrollView
-        contentContainerStyle={[styles.container, { backgroundColor }]}
-      >
+      <View style={[styles.centeredContainer, { backgroundColor }]}>
         <ActivityIndicator size="large" color={textColor} />
-        <ThemedText type="default" style={{ color: textColor, marginTop: 10 }}>
-          Chargement des utilisateurs...
-        </ThemedText>
-      </ScrollView>
+      </View>
     );
   }
 
@@ -129,13 +131,12 @@ export default function UserListingScreen(): ReactElement {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor }]}>
       <ThemedText type="title" style={[styles.title, { color: textColor }]}>
-        Liste des utilisateurs
+        User Listing
       </ThemedText>
-      {users.map(
-        (user: User): ReactElement => (
-          <UserItem key={user.id} user={user} textColor={textColor} />
-        ),
-      )}
+      <SearchFilterBar
+        data={users.map((user) => `${user.id} ${user.firstName} ${user.lastName} ${user.email}`)}
+        onItemPress={(text) => setSearchText(text)}
+      />
     </ScrollView>
   );
 }
@@ -149,6 +150,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingHorizontal: 16,
   },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -159,6 +165,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 16,
     borderRadius: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    backgroundColor: "rgba(150, 150, 150, 0.1)",
   },
 });

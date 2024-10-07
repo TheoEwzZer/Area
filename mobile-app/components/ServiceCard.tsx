@@ -1,4 +1,5 @@
-import React, { ReactElement } from "react";
+import { API_URL } from "@/constants/Data";
+import React, { ReactElement, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +8,13 @@ import {
   Dimensions,
   ScrollView,
   Image,
+  Linking,
+  Modal,
+  Pressable,
 } from "react-native";
+import { useUsers } from "@/services/api/Users";
+import { useAuth } from "@clerk/clerk-expo";
+import { ThemedText } from "./ThemedText";
 
 const screenWidth: number = Dimensions.get("window").width;
 const cardWidth: number = screenWidth * 0.8;
@@ -19,6 +26,7 @@ interface ServiceCardProps {
   imageUrl: string;
   actions: string[];
   reactions: string[];
+  isConnected?: boolean;
 }
 
 export const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -27,9 +35,31 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
   imageUrl,
   actions,
   reactions,
+  isConnected = false,
 }) => {
+  const { userId } = useAuth();
+  const { deleteUserService } = useUsers();
+  const [connected, setConnected] = useState(isConnected);
+  const [modalVisible, setModalVisible] = useState(false);
+
   const handleConnectPress: () => void = (): void => {
-    console.log(`Connecting to ${name}`);
+    if (connected) {
+      setModalVisible(true);
+    } else {
+      Linking.openURL(API_URL.concat("/oauth2/authorize/").concat(name));
+    }
+  };
+
+  const handleDisconnectConfirm: () => void = (): void => {
+    deleteUserService(JSON.stringify(userId), name)
+      .then(() => {
+        setConnected(false);
+        setModalVisible(false);
+      })
+      .catch((err) => {
+        console.error("Failed to disconnect:", err);
+        setModalVisible(false);
+      });
   };
 
   const renderList: (
@@ -69,12 +99,12 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
           {renderList(
             actions,
             actions.length === 1 ? "Action" : "Actions",
-            "Aucune action",
+            "None",
           )}
           {renderList(
             reactions,
             reactions.length === 1 ? "Reaction" : "Reactions",
-            "Aucune reaction",
+            "None",
           )}
         </ScrollView>
         <View style={styles.connectContainer}>
@@ -82,10 +112,38 @@ export const ServiceCard: React.FC<ServiceCardProps> = ({
             style={styles.connectButton}
             onPress={handleConnectPress}
           >
-            <Text style={[styles.connectButtonText, { color }]}>Connect</Text>
+            <Text style={[styles.connectButtonText, { color }]}>
+              {connected ? "Disconnect" : "Connect"}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
+
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <ThemedText type="default" style={styles.modalText}>Are you sure ?</ThemedText>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={handleDisconnectConfirm}
+              >
+                <Text style={styles.modalButtonText}>Oui</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Non</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
@@ -172,5 +230,39 @@ const styles = StyleSheet.create({
   connectButtonText: {
     fontWeight: "bold",
     fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    width: 300,
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    flex: 1,
+    padding: 10,
+    marginHorizontal: 5,
+    backgroundColor: "#2196F3",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });

@@ -5,15 +5,19 @@ import { Colors } from "@/constants/Colors";
 import { ServiceCard } from "@/components/ServiceCard";
 import { ThemedText } from "@/components/ThemedText";
 import { useServices } from "@/services/api/Services";
+import { useUsers } from "@/services/api/Users";
 import { Action, Reaction, Service } from "@/constants/Types";
+import { useAuth } from "@clerk/clerk-expo";
 
 export default function WorkflowsScreen(): ReactElement {
   const { theme } = useTheme();
   const { fetchServices } = useServices();
+  const { fetchUserServices } = useUsers();
   const [services, setServices] = useState<Service[]>([]);
+  const [userServicesNames, setUserServicesNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { userId } = useAuth();
   const textColor: string = Colors[theme].text;
   const backgroundColor: string = Colors[theme].background;
 
@@ -21,11 +25,23 @@ export default function WorkflowsScreen(): ReactElement {
     const loadServices: () => Promise<void> = async (): Promise<void> => {
       try {
         const fetchedServices: Service[] = await fetchServices();
+        const fetchedUserServices: { services: { service: string }[] } = await fetchUserServices(userId!);
+        
+        if (!Array.isArray(fetchedUserServices.services)) {
+          throw new Error("Invalid data format for user services");
+        }
+
+        const userServicesNames: string[] = fetchedUserServices.services.map(
+          (service) => service.service
+        );
+
         setServices(fetchedServices);
+        setUserServicesNames(userServicesNames);
         setLoading(false);
       } catch (err) {
+        console.error("Error loading services:", err);
         setError(
-          err instanceof Error ? err.message : "Une erreur est survenue",
+          err instanceof Error ? err.message : "An error occurred",
         );
         setLoading(false);
       }
@@ -40,9 +56,6 @@ export default function WorkflowsScreen(): ReactElement {
         contentContainerStyle={[styles.container, { backgroundColor }]}
       >
         <ActivityIndicator size="large" color={textColor} />
-        <Text style={{ color: textColor, marginTop: 10 }}>
-          Chargement des services...
-        </Text>
       </ScrollView>
     );
   }
@@ -77,6 +90,7 @@ export default function WorkflowsScreen(): ReactElement {
             reactions={service.reactions.map(
               (reaction: Reaction): string => reaction.name,
             )}
+            isConnected={userServicesNames.includes(service.type)}
           />
         ),
       )}

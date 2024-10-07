@@ -14,6 +14,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/ThemeContext";
 import { Tabs } from "expo-router";
 import { useAuth } from "@clerk/clerk-expo";
+import { useAdmin } from "@/services/api/Admin";
 
 export default function TabLayout(): ReactElement {
   const { theme, toggleTheme } = useTheme();
@@ -21,6 +22,10 @@ export default function TabLayout(): ReactElement {
   const backgroundColor: string = Colors[theme].background;
   const borderColor: string = Colors[theme].tint;
   const { signOut } = useAuth();
+  const { checkAdmin } = useAdmin();
+
+  // Work in progress, hide users tab if not admin
+  const { isAdmin } = checkAdmin();
 
   const handleSignOut: () => Promise<void> = async (): Promise<void> => {
     try {
@@ -87,13 +92,13 @@ export default function TabLayout(): ReactElement {
             tabBarIcon: ({ color }) => <Workflow stroke={color} />,
           }}
         />
-        <Tabs.Screen
-          name="users"
-          options={{
-            title: "Users",
-            tabBarIcon: ({ color }) => <List stroke={color} />,
-          }}
-        />
+          <Tabs.Screen
+            name="users"
+            options={{
+              title: "Users",
+              tabBarIcon: ({ color }) => <List stroke={color} />,
+            }}
+          />
       </Tabs>
     </View>
   );

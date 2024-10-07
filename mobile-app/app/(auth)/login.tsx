@@ -2,28 +2,25 @@ import { ThemedText } from "@/components/ThemedText";
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link } from "expo-router";
 import React, { ReactElement, useState } from "react";
-import { View, StyleSheet, TextInput, Pressable, Text } from "react-native";
+import { View, StyleSheet, TextInput, Pressable, Image, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import Spinner from "react-native-loading-spinner-overlay";
 
-const handleError: (error: any) => void = (error: any): void => {
-  const errorMessage: any = error.errors?.[0]?.message || "An error occurred";
+const handleError = (error: any): void => {
+  const errorMessage = error.errors?.[0]?.message || "An error occurred";
   alert(errorMessage);
 };
 
-const Login: () => ReactElement = (): ReactElement => {
+const Login = (): ReactElement => {
   const { signIn, setActive, isLoaded } = useSignIn();
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const onSignInPress: () => Promise<void> = async (): Promise<void> => {
-    if (!isLoaded) {
-      return;
-    }
-
+  const onSignInPress = async (): Promise<void> => {
+    if (!isLoaded) return;
     setLoading(true);
     try {
-      const completeSignIn: any = await signIn.create({
+      const completeSignIn = await signIn.create({
         identifier: emailAddress,
         password,
       });
@@ -36,72 +33,105 @@ const Login: () => ReactElement = (): ReactElement => {
   };
 
   return (
-    <View style={styles.container}>
-      <Spinner visible={loading} />
-      <TextInput
-        autoCapitalize="none"
-        placeholder="email@email.com"
-        value={emailAddress}
-        onChangeText={setEmailAddress}
-        style={styles.inputField}
-      />
-      <TextInput
-        placeholder="password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.inputField}
-      />
-      <Pressable onPress={onSignInPress} style={styles.buttonLogin}>
-        <Text style={styles.buttonText}>Login</Text>
-      </Pressable>
-      <Link href="/reset" asChild>
-        <Pressable style={styles.button}>
-          <ThemedText type="default" lightColor="yes">
-            Forgot password?
-          </ThemedText>
-        </Pressable>
-      </Link>
-      <Link href="/register" asChild>
-        <Pressable style={styles.button}>
-          <ThemedText type="default" lightColor="yes">
-            Create Account
-          </ThemedText>
-        </Pressable>
-      </Link>
-    </View>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Spinner visible={loading} />
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../../assets/images/area-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+        <View style={styles.formContainer}>
+          <TextInput
+            autoCapitalize="none"
+            placeholder="Email"
+            value={emailAddress}
+            onChangeText={setEmailAddress}
+            style={styles.inputField}
+          />
+          <TextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            style={styles.inputField}
+          />
+          <Pressable onPress={onSignInPress} style={styles.buttonLogin}>
+            <ThemedText type="default">Login</ThemedText>
+          </Pressable>
+        </View>
+        <View style={styles.linksContainer}>
+          <Link href="/reset" asChild>
+            <Pressable style={styles.button}>
+              <ThemedText type="default" style={styles.buttonText}>
+                Forgot password?
+              </ThemedText>
+            </Pressable>
+          </Link>
+          <Link href="/register" asChild>
+            <Pressable style={styles.button}>
+              <ThemedText type="default" style={styles.buttonText}>
+                Create Account
+              </ThemedText>
+            </Pressable>
+          </Link>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
+  },
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: "center",
     padding: 20,
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+  },
+  formContainer: {
+    marginBottom: 20,
+  },
   inputField: {
-    marginVertical: 4,
+    marginVertical: 10,
     height: 50,
     borderWidth: 1,
     borderColor: "#0A0A0A",
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 10,
     backgroundColor: "#fff",
   },
-  button: {
-    margin: 8,
+  buttonLogin: {
+    marginTop: 20,
+    backgroundColor: "gray",
+    padding: 15,
+    borderRadius: 8,
     alignItems: "center",
   },
-  buttonLogin: {
-    marginVertical: 4,
-    backgroundColor: "#0A0A0A",
-    padding: 10,
-    borderRadius: 5,
+  linksContainer: {
+    marginTop: 20,
+  },
+  button: {
+    marginVertical: 10,
     alignItems: "center",
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
+    color: "black",
   },
 });
 

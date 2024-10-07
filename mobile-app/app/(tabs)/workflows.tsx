@@ -11,6 +11,7 @@ import {
 import AreaCard from "@/components/AreaCard";
 import { useTheme } from "@/hooks/ThemeContext";
 import { Colors } from "@/constants/Colors";
+import { ThemedText } from "@/components/ThemedText";
 
 const MyAreasPage: () => ReactElement = (): ReactElement => {
   const { theme } = useTheme();
@@ -21,24 +22,24 @@ const MyAreasPage: () => ReactElement = (): ReactElement => {
   const [areas, setAreas] = useState([
     {
       id: "1",
-      title: "Area 1",
+      title: "Github -> Discord",
       isConnected: false,
       color: "#4169E1",
-      description: "This is a description",
+      description: "When a Pull request is opened, send a message to Discord",
     },
     {
       id: "2",
-      title: "Area 2",
+      title: "Github -> Discord",
       isConnected: true,
       color: "#32CD32",
-      description: "This is a description",
+      description: "When a Pull request is closed, send a message to Discord",
     },
     {
       id: "3",
-      title: "Area 3",
+      title: "Discord -> Github",
       isConnected: false,
       color: "#FF6347",
-      description: "This is a description",
+      description: "When a message is sent, create an issue on Github",
     },
   ]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +95,7 @@ const MyAreasPage: () => ReactElement = (): ReactElement => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }]}>
-      <Text style={[styles.header, { color: textColor }]}>My Areas</Text>
+      <ThemedText type="subtitle" style={[styles.header, { color: textColor }]}>My Areas</ThemedText>
       <TextInput
         style={[
           styles.filterInput,
@@ -140,8 +141,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   header: {
-    fontSize: 24,
-    fontWeight: "bold",
     margin: 16,
   },
   filterInput: {

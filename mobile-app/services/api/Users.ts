@@ -1,12 +1,8 @@
 import { useAuth } from "@clerk/clerk-expo";
-import { Service } from "@/constants/Types";
+import { Service, User } from "@/constants/Types";
+import { API_URL } from "@/constants/Data";
 
-const API_URL =
-  "https://69d6-2001-861-e3d9-2750-ce1-ab-5bd2-6dea.ngrok-free.app/api";
-
-export const useUsers: () => {
-  fetchUserServices: (userId: string) => Promise<Service[]>;
-} = () => {
+export const useUsers = () => {
   const { getToken } = useAuth();
 
   const fetchUserServices: (userId: string) => Promise<Service[]> = async (
@@ -14,7 +10,7 @@ export const useUsers: () => {
   ): Promise<Service[]> => {
     const token: string | null = await getToken();
     if (!token) {
-      throw new Error("No auth token");
+      throw new Error("No auth token provided");
     }
 
     const response = await fetch(`${API_URL}/users/${userId}/services`, {
@@ -28,13 +24,60 @@ export const useUsers: () => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`Request error : ${errorData.message}`);
+      throw new Error(`Request error: ${errorData.message}`);
     }
 
     const data: Service[] = await response.json();
-    console.log(data);
     return data;
   };
 
-  return { fetchUserServices };
+  const fetchUsers: () => Promise<User[]> = async (): Promise<User[]> => {
+    const token: string | null = await getToken();
+    if (!token) {
+      throw new Error("No auth token provided");
+    }
+
+    const response = await fetch(`${API_URL}/users`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        mode: "cors",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Request error: ${errorData.message}`);
+    }
+
+    const data: User[] = await response.json();
+    return data;
+  };
+
+  const deleteUserService: (userId: string, serviceName: string) => Promise<void> = async (
+      userId: string,
+      serviceName: string
+    ): Promise<void> => {
+      const token: string | null = await getToken();
+      if (!token) {
+        throw new Error("No auth token provided");
+      }
+  
+      const response = await fetch(`${API_URL}/users/${userId}/services/${serviceName}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          mode: "cors",
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Request error: ${errorData.message}`);
+      }  
+    };
+
+  return { fetchUserServices, fetchUsers, deleteUserService };
 };

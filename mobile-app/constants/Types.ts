@@ -23,7 +23,15 @@ export interface Reaction {
   serviceInfoId: number;
 }
 
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 export interface Service {
+  [x: string]: never[];
   service: ReactNode;
   id: number;
   type: string;

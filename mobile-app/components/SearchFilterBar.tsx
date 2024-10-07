@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, ReactElement } from "react";
 import { View, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { ThemedText } from "./ThemedText";
+import { useTheme } from "@/hooks/ThemeContext";
+import { Colors } from "@/constants/Colors";
 
 interface SearchFilterBarProps {
   data: string[];
@@ -11,6 +13,10 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   data,
   onItemPress,
 }) => {
+  const { theme } = useTheme();
+  const textColor = Colors[theme].text;
+  const backgroundColor = Colors[theme].background;
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredData, setFilteredData] = useState(data);
 
@@ -26,10 +32,11 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
   }, [searchQuery, data, handleFilter]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       <TextInput
-        style={styles.input}
+        style={[styles.input, { color: textColor, borderColor: textColor }]}
         placeholder="Rechercher..."
+        placeholderTextColor={textColor}
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
@@ -42,12 +49,14 @@ const SearchFilterBar: React.FC<SearchFilterBarProps> = ({
                 style={styles.item}
                 onPress={() => onItemPress(item)}
               >
-                <ThemedText type="default">{item}</ThemedText>
+                <ThemedText type="default" style={{ color: textColor }}>
+                  {item}
+                </ThemedText>
               </TouchableOpacity>
             ),
           )
         ) : (
-          <ThemedText type="default" style={styles.errorText}>
+          <ThemedText type="default" style={[styles.errorText, { color: textColor }]}>
             Aucun résultat
           </ThemedText>
         )}
@@ -63,7 +72,6 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    borderColor: "gray",
     borderWidth: 1,
     paddingHorizontal: 10,
     marginBottom: 10,
@@ -77,7 +85,6 @@ const styles = StyleSheet.create({
   errorText: {
     padding: 10,
     fontSize: 16,
-    color: "red",
     textAlign: "center",
   },
 });

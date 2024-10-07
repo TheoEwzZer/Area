@@ -2,20 +2,18 @@ import { useAuth } from "@clerk/clerk-expo";
 import { Service } from "@/constants/Types";
 import { API_URL } from "@/constants/Data";
 
-export const useServices: () => {
-  fetchServices: () => Promise<Service[]>;
+export const useAreas: () => {
+  fetchAreas: () => Promise<[]>;
 } = () => {
   const { getToken } = useAuth();
 
-  const fetchServices: () => Promise<Service[]> = async (): Promise<
-    Service[]
-  > => {
+  const fetchAreas: () => Promise<[]> = async (): Promise<[]> => {
     const token: string | null = await getToken();
     if (!token) {
       throw new Error("No auth token provided");
     }
 
-    const response = await fetch(`${API_URL}/services`, {
+    const response = await fetch(`${API_URL}/areas`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -29,9 +27,9 @@ export const useServices: () => {
       throw new Error(`Request error : ${errorData.message}`);
     }
 
-    const data: Service[] = await response.json();
+    const data: [] = await response.json();
     return data;
   };
 
-  return { fetchServices };
+  return { fetchAreas };
 };

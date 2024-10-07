@@ -16,6 +16,7 @@ import { useUsers } from "@/services/api/Users";
 import { Service } from "@/constants/Types";
 import { useAuth } from "@clerk/clerk-expo";
 import { router } from "expo-router";
+import { ThemedText } from "@/components/ThemedText";
 
 const Header: ({ textColor }: { textColor: string }) => ReactElement = ({
   textColor,
@@ -23,9 +24,9 @@ const Header: ({ textColor }: { textColor: string }) => ReactElement = ({
   textColor: string;
 }): ReactElement => (
   <View style={styles.header}>
-    <Text style={[styles.title, { color: textColor }]}>
+    <ThemedText type="subtitle" style={{ color: textColor }}>
       Create your own AREA
-    </Text>
+    </ThemedText>
   </View>
 );
 
@@ -46,13 +47,14 @@ export default function WorkflowsScreen(): ReactElement {
   const [servicesLoaded, setServicesLoaded] = useState(false);
 
   useEffect((): void => {
-    const loadUserServices: () => Promise<void> = async (): Promise<void> => {
+    const loadUserServices = async (): Promise<void> => {
       if (!userId || servicesLoaded) {
         return;
       }
       try {
-        const fetchedServices: Service[] = await fetchUserServices(userId);
-        setUserServices(fetchedServices || []);
+        const response = await fetchUserServices(userId);
+        const fetchedServices = response.services || [];
+        setUserServices(fetchedServices);
         setServicesLoaded(true);
       } catch (err) {
         console.error("Failed to fetch user services:", err);
@@ -65,6 +67,15 @@ export default function WorkflowsScreen(): ReactElement {
   const handleAddBlock: (index: number) => void = (index: number): void => {
     setSelectedBlockIndex(index);
     setShowServiceModal(true);
+  };
+
+  const handleSelectService: (service: Service) => void = (service: Service): void => {
+    setBlocks((prevBlocks) =>
+      prevBlocks.map((block, index) =>
+        index === selectedBlockIndex ? { ...block, text: String(service.service) } : block
+      )
+    );
+    setShowServiceModal(false);
   };
 
   return (
@@ -87,7 +98,7 @@ export default function WorkflowsScreen(): ReactElement {
                   onPress={(): void => handleAddBlock(index)}
                   style={[styles.block, { backgroundColor: block.color }]}
                 >
-                  <Text style={styles.blockText}>{block.text}</Text>
+                  <ThemedText>{block.text}</ThemedText>
                 </TouchableOpacity>
                 {index < blocks.length - 1 && (
                   <View
@@ -105,46 +116,41 @@ export default function WorkflowsScreen(): ReactElement {
         animationType="slide"
         transparent={true}
       >
-        <TouchableWithoutFeedback
-          onPress={(): void => setShowServiceModal(false)}
-        >
+        <TouchableWithoutFeedback onPress={() => setShowServiceModal(false)}>
           <View style={styles.modalContainer}>
-            <TouchableWithoutFeedback onPress={(): void => {}}>
+            <TouchableWithoutFeedback onPress={() => {}}>
               <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>
+                <ThemedText style={styles.modalTitle}>
                   {userServices.length === 0
                     ? "No services linked yet"
                     : "Select a Service"}
-                </Text>
+                </ThemedText>
                 {userServices.length === 0 && (
                   <Pressable
-                    onPress={(): void => {
+                    onPress={() => {
                       setShowServiceModal(false);
                       router.push("/link");
                     }}
                   >
-                    <Text style={styles.linkText}>
+                    <ThemedText style={styles.linkText}>
                       Click here to go to the link page
-                    </Text>
+                    </ThemedText>
                   </Pressable>
                 )}
                 {userServices.length > 0 && (
                   <ScrollView>
-                    {userServices.map(
-                      (service: Service, index: number): ReactElement => (
-                        <TouchableOpacity
-                          key={index}
-                          style={styles.modalItem}
-                          onPress={(): void => {
-                            setShowServiceModal(false);
-                          }}
+                    {userServices.map((service: Service, index: number) => (
+                      <View key={index} style={styles.modalItem}>
+                        <Pressable
+                          onPress={() => handleSelectService(service)}
+                          style={styles.serviceButton}
                         >
-                          <Text style={styles.modalItemText}>
+                          <ThemedText style={styles.serviceButtonText}>
                             {service.service}
-                          </Text>
-                        </TouchableOpacity>
-                      ),
-                    )}
+                          </ThemedText>
+                        </Pressable>
+                      </View>
+                    ))}
                   </ScrollView>
                 )}
               </View>
@@ -215,14 +221,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 10,
     textAlign: "center",
+    color: "#000",
   },
   modalItem: {
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
   },
-  modalItemText: {
+  serviceButton: {
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  serviceButtonText: {
     fontSize: 16,
+    color: "#000",
   },
   linkText: {
     color: "blue",

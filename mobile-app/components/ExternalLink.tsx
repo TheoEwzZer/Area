@@ -1,5 +1,6 @@
 import { Link } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
+import React from "react";
 import { ReactElement, type ComponentProps } from "react";
 import { GestureResponderEvent, Platform } from "react-native";
 

@@ -60,7 +60,7 @@ The project is built using the following technologies:
 
 #### GitHub Actions
 
-- **Any new Gist**: This trigger fires every time you create a new Gist on GitHub.
+- **Any new pull request**: This trigger fires every time any new pull request is opened in a repository you own or collaborate on.
 - **Any new issue**: This trigger fires every time any new issue is opened in a repository you own or collaborate on.
 
 #### GitHub Reactions

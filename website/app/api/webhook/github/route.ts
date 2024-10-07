@@ -53,6 +53,11 @@ async function findArea(
         actionName = "Any new issue";
       }
       break;
+    case "pull_request":
+      if (payload.action === "opened") {
+        actionName = "Any new pull request";
+      }
+      break;
     default:
       return null;
   }

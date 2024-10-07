@@ -13,6 +13,7 @@ export async function handleGithubAction(
 
   switch (action) {
     case "Any new issue":
+    case "Any new pull request":
       return NextResponse.json({
         actionName: action,
         parameters: [

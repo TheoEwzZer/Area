@@ -12,8 +12,8 @@ export async function GET(req: NextRequest): Promise<NextResponse<unknown>> {
   }
 
   const tokenUrl = "https://github.com/login/oauth/access_token";
-  const clientId: string = process.env.GITHUB_CLIENT_ID!;
-  const clientSecret: string = process.env.GITHUB_CLIENT_SECRET!;
+  const clientId: string = process.env.GITHUB_APP_CLIENT_ID!;
+  const clientSecret: string = process.env.GITHUB_APP_CLIENT_SECRET!;
 
   try {
     const response = await fetch(tokenUrl, {

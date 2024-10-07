@@ -7,12 +7,11 @@ export async function handleGithubAction(
   const userAccessToken: string = await getGithubAccessToken();
   const userAccount: any = await getUserAccounts(userAccessToken);
 
-  if (!userAccount || !userAccount.login) {
+  if (!userAccount?.login) {
     return NextResponse.json({ detail: "No account found" }, { status: 400 });
   }
 
   switch (action) {
-    case "Any new Gist":
     case "Any new issue":
       return NextResponse.json({
         actionName: action,

@@ -89,6 +89,54 @@ export async function handleGithubAction(
         ],
       });
 
+    case "Create new gist":
+      return NextResponse.json({
+        actionName: action,
+        parameters: [
+          {
+            name: "account",
+            label: "GitHub account",
+            type: "select",
+            options: [
+              {
+                value: userAccount.login,
+                label: userAccount.login,
+              },
+            ],
+          },
+          {
+            name: "description",
+            label: "Description",
+            type: "textarea",
+          },
+          {
+            name: "filename",
+            label: "Filename",
+            type: "text",
+          },
+          {
+            name: "filecontent",
+            label: "File Content",
+            type: "textarea",
+          },
+          {
+            name: "public",
+            label: "Secret gist?",
+            type: "select",
+            options: [
+              {
+                value: "true",
+                label: "Yes",
+              },
+              {
+                value: "false",
+                label: "No",
+              },
+            ],
+          },
+        ],
+      });
+
     default:
       return NextResponse.json({ detail: "Invalid action" }, { status: 400 });
   }

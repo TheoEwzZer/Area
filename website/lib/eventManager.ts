@@ -423,12 +423,12 @@ export const eventHandlers: Record<string, EventHandler> = {
       reactionData: any,
       service: Service
     ): Promise<void> => {
+      const octokit = new Octokit({
+        auth: service.accessToken,
+      });
+
       switch (reaction.name) {
         case "Create an issue": {
-          const octokit = new Octokit({
-            auth: service.accessToken,
-          });
-
           const [owner, repo] = reactionData.repository.split("/");
 
           await octokit.rest.issues.create({
@@ -436,6 +436,19 @@ export const eventHandlers: Record<string, EventHandler> = {
             repo,
             title: reactionData.title,
             body: reactionData.body,
+          });
+          break;
+        }
+
+        case "Create new gist": {
+          await octokit.rest.gists.create({
+            files: {
+              [reactionData.filename]: {
+                content: reactionData.filecontent,
+              },
+            },
+            description: reactionData.description,
+            public: reactionData.public,
           });
           break;
         }

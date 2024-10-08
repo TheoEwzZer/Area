@@ -1,0 +1,32 @@
+name: Sync to Personal Repo
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Add personal repo as remote
+        run: git remote add personal https://github.com/TheoEwzZer/Area.git
+
+      - name: Push to personal repo
+        run: |
+          git push personal --all
+          git push personal --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

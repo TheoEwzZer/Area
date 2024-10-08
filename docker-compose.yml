@@ -1,0 +1,19 @@
+services:
+  website:
+    build: ./website
+    ports:
+      - "8080:8080"
+    volumes:
+      - shared-volume:/shared
+    command: ["npm", "run", "dev"]
+    environment:
+      - NODE_ENV=development
+
+  mobile:
+    build: ./mobile
+    volumes:
+      - shared-volume:/shared
+    command: ["./build-mobile.sh"]
+
+volumes:
+  shared-volume:

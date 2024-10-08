@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ServiceType {
+  YOUTUBE
+  GMAIL
+  GITHUB
+  DISCORD
+  GOOGLE_CALENDAR
+}
+
+model Area {
+  id               Int            @id @default(autoincrement())
+  title            String
+  userId           String
+  actionId         Int
+  action           Action         @relation(fields: [actionId], references: [id])
+  actionData       Json
+  isActive         Boolean        @default(true)
+  channelWatchId   String?
+  ressourceWatchId String?
+  reactions        Reaction[]
+  reactionData     ReactionData[]
+}
+
+model Service {
+  id           Int         @id @default(autoincrement())
+  accessToken  String
+  refreshToken String?
+  userId       String
+  service      ServiceType
+}
+
+model ServiceInfo {
+  id          Int         @id @default(autoincrement())
+  type        ServiceType @unique
+  color       String
+  image_url   String
+  description String
+  actions     Action[]
+  reactions   Reaction[]
+}
+
+model Action {
+  id            Int         @id @default(autoincrement())
+  name          String
+  description   String
+  serviceInfo   ServiceInfo @relation(fields: [serviceInfoId], references: [id])
+  serviceInfoId Int
+
+  Area Area[]
+}
+
+model Reaction {
+  id            Int         @id @default(autoincrement())
+  name          String
+  description   String
+  serviceInfo   ServiceInfo @relation(fields: [serviceInfoId], references: [id])
+  serviceInfoId Int
+
+  Area         Area[]
+  reactionData ReactionData[]
+}
+
+model ReactionData {
+  id         Int      @id @default(autoincrement())
+  data       Json
+  areaId     Int
+  area       Area     @relation(fields: [areaId], references: [id])
+  reactionId Int
+  reaction   Reaction @relation(fields: [reactionId], references: [id])
+}

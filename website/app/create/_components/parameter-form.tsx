@@ -2,6 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   Form,
   FormControl,
   FormField,
@@ -11,20 +19,21 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ReactElement, useState } from "react";
-import { useForm, UseFormReturn } from "react-hook-form";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Option } from "@/types/globals";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { ReactElement, useCallback, useState } from "react";
+import { ControllerRenderProps, useForm, UseFormReturn } from "react-hook-form";
 
 interface Parameter {
   name: string;
   label: string;
   type: string;
-  options?: { value: string; label: string }[];
+  options?: Option[];
 }
 
 interface ParameterFormProps {
@@ -35,14 +44,15 @@ interface ParameterFormProps {
 export default function ParameterForm({
   parameters,
   onSubmit,
-}: ParameterFormProps): ReactElement {
-  const [channels, setChannels] = useState<{ value: string; label: string }[]>(
-    []
-  );
+}: Readonly<ParameterFormProps>): ReactElement {
+  const [channels, setChannels] = useState<Option[]>([]);
 
   const form: UseFormReturn<Record<string, string>, any, undefined> = useForm({
     defaultValues: parameters.reduce(
-      (acc: Record<string, string>, param: Parameter) => {
+      (
+        acc: Record<string, string>,
+        param: Parameter
+      ): Record<string, string> => {
         acc[param.name] = "";
         return acc;
       },
@@ -65,6 +75,50 @@ export default function ParameterForm({
     }
   };
 
+  const handleSelect: (paramName: string, optionValue: string) => void = (
+    paramName: string,
+    optionValue: string
+  ): void => {
+    form.setValue(paramName, optionValue);
+    if (paramName === "guild") {
+      handleGuildChange(optionValue);
+    }
+  };
+
+  const getOptions: (param: Parameter) => Option[] = useCallback(
+    (param: Parameter): Option[] => {
+      if (param.name === "channel") {
+        return channels;
+      }
+      return param.options || [];
+    },
+    [channels]
+  );
+
+  const renderCommandItem: (
+    param: Parameter,
+    option: Option,
+    field: ControllerRenderProps<Record<string, string>, string>
+  ) => ReactElement = (
+    param: Parameter,
+    option: Option,
+    field: ControllerRenderProps<Record<string, string>, string>
+  ): ReactElement => (
+    <CommandItem
+      value={option.label}
+      key={option.value}
+      onSelect={(): void => handleSelect(param.name, option.value)}
+    >
+      <Check
+        className={cn(
+          "mr-2 h-4 w-4",
+          option.value === field.value ? "opacity-100" : "opacity-0"
+        )}
+      />
+      {option.label}
+    </CommandItem>
+  );
+
   return (
     <Form {...form}>
       <form
@@ -77,44 +131,49 @@ export default function ParameterForm({
               key={param.name}
               name={param.name}
               control={form.control}
-              render={({ field }) => (
+              render={({
+                field,
+              }: {
+                field: ControllerRenderProps<Record<string, string>, string>;
+              }): ReactElement => (
                 <FormItem className="space-y-1">
                   <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
                   {param.type === "select" ? (
-                    <FormControl>
-                      <Select
-                        {...field}
-                        onValueChange={(value: string): void => {
-                          field.onChange(value);
-                          if (param.name === "guild") {
-                            handleGuildChange(value);
-                          }
-                        }}
-                        required
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an option" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(param.name === "channel"
-                            ? channels
-                            : param.options
-                          )?.map(
-                            (option: {
-                              value: string;
-                              label: string;
-                            }): ReactElement => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}
-                              >
-                                {option.label}
-                              </SelectItem>
-                            )
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? (getOptions(param).find(
+                                  (option: Option): boolean =>
+                                    option.value === field.value
+                                )?.label ?? "Select an option")
+                              : "Select an option"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Search option..." />
+                          <CommandList>
+                            <CommandEmpty>No option found</CommandEmpty>
+                            <CommandGroup>
+                              {getOptions(param).map(
+                                (option: Option): ReactElement =>
+                                  renderCommandItem(param, option, field)
+                              )}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   ) : (
                     <FormControl>
                       <Input

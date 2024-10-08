@@ -5,9 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Action, Service, ServiceType } from "@prisma/client";
-import { ArrowDown, ArrowLeft, Check, Search, Zap } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  Check,
+  Plus,
+  Search,
+  Trash,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
 import React, { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { ServiceInfoWithActionsAndReactions } from "../about.json/route";
@@ -21,11 +35,13 @@ const initialBlocks: Block[] = [
     type: "action",
     text: "Choose an Action",
     icon: <Zap className="h-6 w-6" />,
+    id: 0,
   },
   {
     type: "reaction",
     text: "Choose a REAction",
     icon: <Check className="h-6 w-6" />,
+    id: 1,
   },
 ];
 
@@ -52,8 +68,6 @@ export default function WorkflowBuilder(): ReactElement {
   );
   const [isParameterModalOpen, setIsParameterModalOpen] =
     useState<boolean>(false);
-  const [isAddBlockModalOpen, setIsAddBlockModalOpen] =
-    useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isServicesLoading, setIsServicesLoading] = useState<boolean>(true);
   const { toast } = useToast();
@@ -62,15 +76,15 @@ export default function WorkflowBuilder(): ReactElement {
     const action: Block | undefined = blocks.find(
       (block: Block): boolean => block.type === "action"
     );
-    const reaction: Block | undefined = blocks.find(
+    const reactions: Block[] = blocks.filter(
       (block: Block): boolean => block.type === "reaction"
     );
 
-    if (!action?.action || !reaction?.action) {
+    if (!action?.action || reactions.length === 0) {
       toast({
         title: "Error",
         description:
-          "Please select both an action and a reaction before saving.",
+          "Please select both an action and at least one reaction before saving.",
         variant: "destructive",
       });
       return;
@@ -86,9 +100,16 @@ export default function WorkflowBuilder(): ReactElement {
           actionService: action.service,
           actionName: action.action,
           actionParameters: action.parameters,
-          reactionService: reaction.service,
-          reactionName: reaction.action,
-          reactionParameters: reaction.parameters,
+          reactionServices: reactions.map(
+            (reaction: Block): ServiceType | undefined => reaction.service
+          ),
+          reactionNames: reactions.map(
+            (reaction: Block): string | undefined => reaction.action
+          ),
+          reactionParameters: reactions.map(
+            (reaction: Block): Record<string, string> | undefined =>
+              reaction.parameters
+          ),
         }),
       });
 
@@ -242,28 +263,33 @@ export default function WorkflowBuilder(): ReactElement {
     }
   };
 
-  // const handleDeleteBlock: (index: number) => void = (index: number): void => {
-  //   const newBlocks: Block[] = [...blocks];
-  //   newBlocks.splice(index, 1);
-  //   setBlocks(newBlocks);
-  // };
+  const handleDeleteBlock: (index: number) => void = (index: number): void => {
+    const newBlocks: Block[] = [...blocks];
+    newBlocks.splice(index, 1);
 
-  const handleAddBlock: (type: "action" | "reaction") => void = (
-    type: "action" | "reaction"
-  ): void => {
+    if (index === 0 || index === 1) {
+      if (!newBlocks.some((block: Block): boolean => block.type === "action")) {
+        newBlocks.unshift(initialBlocks[0]);
+      }
+      if (
+        !newBlocks.some((block: Block): boolean => block.type === "reaction")
+      ) {
+        newBlocks.splice(1, 0, initialBlocks[1]);
+      }
+    }
+
+    setBlocks(newBlocks);
+  };
+
+  const handleAddBlock: () => void = (): void => {
     const newBlock: Block = {
-      type,
-      text: type === "action" ? "Choose an Action" : "Choose a REAction",
-      icon:
-        type === "action" ? (
-          <Zap className="h-6 w-6" />
-        ) : (
-          <Check className="h-6 w-6" />
-        ),
-      color: type === "action" ? "#EF4444" : "#F59E0B",
+      type: "reaction",
+      text: "Choose a REAction",
+      icon: <Check className="h-6 w-6" />,
+      color: "#F59E0B",
+      id: blocks.length,
     };
     setBlocks([...blocks, newBlock]);
-    setIsAddBlockModalOpen(false);
   };
 
   return (
@@ -280,22 +306,24 @@ export default function WorkflowBuilder(): ReactElement {
         <div className="space-y-4">
           {blocks.map(
             (block: Block, index: number): ReactElement => (
-              <React.Fragment key={index}>
+              <React.Fragment key={block.id}>
                 <div className="relative flex w-full items-center">
                   <BlockItem
                     block={block}
+                    index={index}
                     onClick={(): void => handleBlockClick(block)}
                     services={services}
                   />
-                  {/* <Button
+                  <Button
                     variant="ghost"
-                    className="ml-2"
+                    size="icon"
+                    className="absolute right-4 hover:bg-transparent"
                     onClick={(): void => handleDeleteBlock(index)}
                   >
-                    <Trash className="h-5 w-5 text-red-500" />
-                  </Button> */}
+                    <Trash className="h-5 w-5" />
+                  </Button>
                 </div>
-                {index < blocks.length - 1 && (
+                {index < blocks.length && (
                   <div className="flex justify-center">
                     <ArrowDown
                       color="black"
@@ -306,15 +334,23 @@ export default function WorkflowBuilder(): ReactElement {
               </React.Fragment>
             )
           )}
-          {/* <div className="flex justify-center mt-4 pt-8">
-            <Button
-              variant="outline"
-              className="rounded-full p-2"
-              onClick={() : void => setIsAddBlockModalOpen(true)}
-            >
-              <Plus className="h-6 w-6" />
-            </Button>
-          </div> */}
+          <div className="flex justify-center">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="rounded-full"
+                    onClick={handleAddBlock}
+                  >
+                    <Plus className="h-6 w-6" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Add more reactions</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
         <div className="mt-12">
           <Button
@@ -448,30 +484,6 @@ export default function WorkflowBuilder(): ReactElement {
               onSubmit={handleParameterSubmit}
             />
           )}
-        </DialogContent>
-      </Dialog>
-      <Dialog
-        open={isAddBlockModalOpen}
-        onOpenChange={setIsAddBlockModalOpen}
-      >
-        <DialogContent>
-          <h2 className="mb-4 text-center text-lg font-semibold">
-            Add a new block
-          </h2>
-          <div className="flex justify-center space-x-4">
-            <Button
-              style={{ backgroundColor: "#EF4444", color: "#fff" }}
-              onClick={(): void => handleAddBlock("action")}
-            >
-              Add Action
-            </Button>
-            <Button
-              style={{ backgroundColor: "#F59E0B", color: "#fff" }}
-              onClick={(): void => handleAddBlock("reaction")}
-            >
-              Add REAction
-            </Button>
-          </div>
         </DialogContent>
       </Dialog>
     </div>

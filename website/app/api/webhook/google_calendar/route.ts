@@ -1,8 +1,11 @@
+import { FullReaction } from "@/app/my-areas/page";
 import { db } from "@/lib/db";
 import { EventHandler, eventHandlers } from "@/lib/eventManager";
 import { AreaWithDetails } from "@/types/globals";
 import { Service } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { AreaWithAction } from "../../areas/route";
+import { getAreaWithDetails } from "../github/route";
 
 export async function POST(
   req: NextRequest
@@ -13,22 +16,31 @@ export async function POST(
     return NextResponse.json({ detail: "Missing headers" }, { status: 400 });
   }
 
-  const area: AreaWithDetails | null = await findArea(channelId, resourceId);
-  if (!area) {
-    return NextResponse.json({ detail: "Area not found" }, { status: 404 });
+  const areas: AreaWithDetails[] = await findAreas(channelId, resourceId);
+  if (areas.length === 0) {
+    return NextResponse.json({ detail: "Areas not found" }, { status: 404 });
   }
 
-  const [serviceAction, serviceReaction] = await findServices(area);
-  if (!serviceAction || !serviceReaction) {
-    return NextResponse.json({ detail: "Services not found" }, { status: 404 });
+  for (const area of areas) {
+    const [serviceAction, ...serviceReaction] = await findServices(area);
+    if (!serviceAction || serviceReaction.length === 0) {
+      return NextResponse.json(
+        { detail: "Services not found" },
+        { status: 404 }
+      );
+    }
+
+    await handleResourceState(
+      resourceState,
+      area,
+      serviceAction,
+      serviceReaction
+    );
   }
 
-  return handleResourceState(
-    resourceState,
-    area,
-    serviceAction,
-    serviceReaction
-  );
+  return NextResponse.json({
+    detail: "All triggers fired and reactions executed",
+  });
 }
 
 function getHeaders(req: NextRequest): {
@@ -42,14 +54,15 @@ function getHeaders(req: NextRequest): {
   return { channelId, resourceId, resourceState };
 }
 
-async function findArea(
+async function findAreas(
   channelId: string,
   resourceId: string
-): Promise<AreaWithDetails | null> {
-  return await db.area.findFirst({
+): Promise<AreaWithDetails[]> {
+  const areas: AreaWithAction[] = await db.area.findMany({
     where: {
       channelWatchId: channelId,
       ressourceWatchId: resourceId,
+      isActive: true,
     },
     include: {
       action: {
@@ -57,13 +70,21 @@ async function findArea(
           serviceInfo: true,
         },
       },
-      reaction: {
-        include: {
-          serviceInfo: true,
-        },
-      },
     },
   });
+
+  if (areas.length === 0) {
+    return [];
+  }
+
+  const areasWithDetails: AreaWithDetails[] = await Promise.all(
+    areas.map(
+      (area: AreaWithAction): Promise<AreaWithDetails> =>
+        getAreaWithDetails(area)
+    )
+  );
+
+  return areasWithDetails;
 }
 
 async function findServices(
@@ -76,21 +97,25 @@ async function findServices(
     },
   });
 
-  const serviceReaction: Service | null = await db.service.findFirst({
-    where: {
-      userId: area.userId,
-      service: area.reaction.serviceInfo.type,
-    },
-  });
+  const serviceReactions: (Service | null)[] = await Promise.all(
+    area.reactions.map(async (reaction: FullReaction) => {
+      return await db.service.findFirst({
+        where: {
+          userId: area.userId,
+          service: reaction.serviceInfo.type,
+        },
+      });
+    })
+  );
 
-  return [serviceAction, serviceReaction];
+  return [serviceAction, ...serviceReactions];
 }
 
 async function handleResourceState(
   resourceState: string,
   area: AreaWithDetails,
   serviceAction: Service,
-  serviceReaction: Service
+  serviceReactions: (Service | null)[]
 ): Promise<NextResponse<{ detail: string }>> {
   if (resourceState !== "exists") {
     return NextResponse.json({ detail: "No action needed" });
@@ -110,16 +135,26 @@ async function handleResourceState(
     return NextResponse.json({ detail: "Trigger not fired" });
   }
 
-  const handlerReaction: EventHandler | undefined =
-    eventHandlers[area.reaction.serviceInfo.type];
-  if (!handlerReaction?.executeReaction) {
-    return NextResponse.json({ detail: "Reaction handler not found" });
+  for (let index: number = 0; index < area.reactions.length; index++) {
+    const reaction: FullReaction = area.reactions[index];
+    const handlerReaction: EventHandler | undefined =
+      eventHandlers[reaction.serviceInfo.type];
+
+    if (!handlerReaction?.executeReaction) {
+      return NextResponse.json({ detail: "Reaction handler not found" });
+    }
+
+    const serviceReaction: Service | null = serviceReactions[index];
+    if (!serviceReaction) {
+      return NextResponse.json({ detail: "Service reaction not found" });
+    }
+
+    await handlerReaction.executeReaction(
+      reaction,
+      reaction.reactionData.data,
+      serviceReaction
+    );
   }
 
-  await handlerReaction.executeReaction(
-    area.reaction,
-    area.reactionData,
-    serviceReaction
-  );
-  return NextResponse.json({ detail: "Trigger fired and reaction executed" });
+  return NextResponse.json({ detail: "Trigger fired and reactions executed" });
 }

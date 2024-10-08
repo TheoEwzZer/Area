@@ -5,20 +5,23 @@ import { Block } from "../types";
 
 interface BlockItemProps {
   block: Block;
+  index: number;
   onClick: () => void;
   services: ServiceInfoWithActionsAndReactions[];
 }
 
 export const BlockItem: ({
   block,
+  index,
   onClick,
   services,
 }: BlockItemProps) => ReactElement = ({
   block,
+  index,
   onClick,
   services,
 }: BlockItemProps): ReactElement => (
-  <div
+  <button
     className="flex w-full cursor-pointer items-center rounded-lg p-6 text-white transition-opacity hover:opacity-90"
     style={{
       backgroundColor:
@@ -26,7 +29,9 @@ export const BlockItem: ({
     }}
     onClick={onClick}
   >
-    <div className="mr-6 text-3xl font-bold capitalize">{block.type}</div>
+    <div className="mr-6 text-3xl font-bold capitalize">
+      {index > 1 ? "And" : block.type}
+    </div>
     {block.service ? (
       <Image
         src={
@@ -44,5 +49,5 @@ export const BlockItem: ({
       block.icon
     )}
     <div className="ml-2 text-xl">{block.text}</div>
-  </div>
+  </button>
 );

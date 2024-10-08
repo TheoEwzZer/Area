@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 export type BlockType = "action" | "reaction";
 
 export interface Block {
+  id: number;
   type: BlockType;
   text: string;
   icon: ReactNode;

@@ -17,18 +17,17 @@ enum ServiceType {
 }
 
 model Area {
-  id               Int      @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   title            String
   userId           String
   actionId         Int
-  reactionId       Int
-  action           Action   @relation(fields: [actionId], references: [id])
-  reaction         Reaction @relation(fields: [reactionId], references: [id])
+  action           Action         @relation(fields: [actionId], references: [id])
   actionData       Json
-  reactionData     Json
-  isActive         Boolean  @default(true)
+  isActive         Boolean        @default(true)
   channelWatchId   String?
   ressourceWatchId String?
+  reactions        Reaction[]
+  reactionData     ReactionData[]
 }
 
 model Service {
@@ -66,5 +65,15 @@ model Reaction {
   serviceInfo   ServiceInfo @relation(fields: [serviceInfoId], references: [id])
   serviceInfoId Int
 
-  Area Area[]
+  Area         Area[]
+  reactionData ReactionData[]
+}
+
+model ReactionData {
+  id         Int      @id @default(autoincrement())
+  data       Json
+  areaId     Int
+  area       Area     @relation(fields: [areaId], references: [id])
+  reactionId Int
+  reaction   Reaction @relation(fields: [reactionId], references: [id])
 }

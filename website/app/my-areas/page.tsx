@@ -13,18 +13,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { AreaWithDetails } from "@/types/globals";
+import { Reaction, ReactionData, ServiceInfo } from "@prisma/client";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
-import { ChangeEvent, ReactElement, useEffect, useState } from "react";
-import { AreaWithServiceInfoOnly } from "../api/areas/route";
+import React, { ChangeEvent, ReactElement, useEffect, useState } from "react";
 import { SkeletonCard } from "./_components/skeleton-card";
 
+export interface FullReaction extends Reaction {
+  serviceInfo: ServiceInfo;
+  reactionData: ReactionData;
+}
+
 export default function MyAreas(): ReactElement {
-  const [areas, setAreas] = useState<AreaWithServiceInfoOnly[]>([]);
+  const [areas, setAreas] = useState<AreaWithDetails[]>([]);
   const [filter, setFilter] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedArea, setSelectedArea] =
-    useState<AreaWithServiceInfoOnly | null>(null);
+  const [selectedArea, setSelectedArea] = useState<AreaWithDetails | null>(
+    null
+  );
   const [editedTitle, setEditedTitle] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -33,7 +40,7 @@ export default function MyAreas(): ReactElement {
       try {
         setIsLoading(true);
         const response = await fetch("/api/areas");
-        const data: AreaWithServiceInfoOnly[] = await response.json();
+        const data: AreaWithDetails[] = await response.json();
         setAreas(data);
       } catch (error) {
         console.error("Failed to fetch areas:", error);
@@ -45,17 +52,19 @@ export default function MyAreas(): ReactElement {
     fetchAreas();
   }, []);
 
-  const filteredAreas: AreaWithServiceInfoOnly[] = areas.filter(
-    (area: AreaWithServiceInfoOnly): boolean =>
+  const filteredAreas: AreaWithDetails[] = areas.filter(
+    (area: AreaWithDetails): boolean =>
       area.title.toLowerCase().includes(filter.toLowerCase()) ||
-      area.actionServiceInfo.type
+      area.action.serviceInfo.type
         .toLowerCase()
         .includes(filter.toLowerCase()) ||
-      area.reactionServiceInfo.type.toLowerCase().includes(filter.toLowerCase())
+      area.reactions.some((reaction: FullReaction): boolean =>
+        reaction.serviceInfo.type.toLowerCase().includes(filter.toLowerCase())
+      )
   );
 
-  const handleCardClick: (area: AreaWithServiceInfoOnly) => void = (
-    area: AreaWithServiceInfoOnly
+  const handleCardClick: (area: AreaWithDetails) => void = (
+    area: AreaWithDetails
   ): void => {
     setSelectedArea(area);
     setEditedTitle(area.title);
@@ -75,7 +84,7 @@ export default function MyAreas(): ReactElement {
         if (response.ok) {
           setAreas(
             areas.map(
-              (area: AreaWithServiceInfoOnly): AreaWithServiceInfoOnly =>
+              (area: AreaWithDetails): AreaWithDetails =>
                 area.id === selectedArea.id
                   ? { ...area, isActive: !area.isActive }
                   : area
@@ -101,8 +110,7 @@ export default function MyAreas(): ReactElement {
         if (response.ok) {
           setAreas(
             areas.filter(
-              (area: AreaWithServiceInfoOnly): boolean =>
-                area.id !== selectedArea.id
+              (area: AreaWithDetails): boolean => area.id !== selectedArea.id
             )
           );
           setIsModalOpen(false);
@@ -126,7 +134,7 @@ export default function MyAreas(): ReactElement {
         if (response.ok) {
           setAreas(
             areas.map(
-              (area: AreaWithServiceInfoOnly): AreaWithServiceInfoOnly =>
+              (area: AreaWithDetails): AreaWithDetails =>
                 area.id === selectedArea.id
                   ? { ...area, title: editedTitle }
                   : area
@@ -169,31 +177,45 @@ export default function MyAreas(): ReactElement {
                 )
               )
           : filteredAreas.map(
-              (area: AreaWithServiceInfoOnly): ReactElement => (
+              (area: AreaWithDetails): ReactElement => (
                 <Card
                   key={area.id}
                   className="relative cursor-pointer transition-all hover:shadow-lg"
                   style={{
-                    background: `linear-gradient(to right, ${area.actionServiceInfo.color}, ${area.reactionServiceInfo.color})`,
+                    background: `linear-gradient(to right, ${area.action.serviceInfo.color}, ${area.reactions
+                      .map(
+                        (reaction: FullReaction): string =>
+                          reaction.serviceInfo.color
+                      )
+                      .join(", ")})`,
                   }}
                   onClick={(): void => handleCardClick(area)}
                 >
                   <div className="absolute left-6 top-6 flex gap-2">
                     <Image
-                      src={area.actionServiceInfo.image_url}
-                      alt={area.actionServiceInfo.type}
+                      src={area.action.serviceInfo.image_url}
+                      alt={area.action.serviceInfo.type}
                       width={24}
                       height={24}
                       className="h-6 w-6 rounded-md"
                     />
                     <ArrowRight color="white" />
-                    <Image
-                      src={area.reactionServiceInfo.image_url}
-                      alt={area.reactionServiceInfo.type}
-                      width={24}
-                      height={24}
-                      className="h-6 w-6 rounded-md"
-                    />
+                    {area.reactions.map(
+                      (reaction: FullReaction, index: number): ReactElement => (
+                        <React.Fragment key={reaction.id}>
+                          <Image
+                            src={reaction.serviceInfo.image_url}
+                            alt={reaction.serviceInfo.type}
+                            width={24}
+                            height={24}
+                            className="h-6 w-6 rounded-md"
+                          />
+                          {index < area.reactions.length - 1 && (
+                            <ArrowRight color="white" />
+                          )}
+                        </React.Fragment>
+                      )
+                    )}
                   </div>
                   <CardHeader className="pt-14">
                     <CardTitle className="text-3xl text-white">
@@ -233,7 +255,7 @@ export default function MyAreas(): ReactElement {
               <div>
                 <DialogTitle
                   className="text-2xl font-bold"
-                  style={{ color: selectedArea.actionServiceInfo.color }}
+                  style={{ color: selectedArea.action.serviceInfo.color }}
                 >
                   Edit Area
                 </DialogTitle>
@@ -243,20 +265,30 @@ export default function MyAreas(): ReactElement {
               </div>
               <div className="flex items-center space-x-2">
                 <Image
-                  src={selectedArea.actionServiceInfo.image_url}
-                  alt={selectedArea.actionServiceInfo.type}
+                  src={selectedArea.action.serviceInfo.image_url}
+                  alt={selectedArea.action.serviceInfo.type}
                   width={24}
                   height={24}
                   className="rounded-md invert filter"
                 />
                 <ArrowRight color="black" />
-                <Image
-                  src={selectedArea.reactionServiceInfo.image_url}
-                  alt={selectedArea.reactionServiceInfo.type}
-                  width={24}
-                  height={24}
-                  className="rounded-md invert filter"
-                />
+                {selectedArea.reactions.map(
+                  (reaction: FullReaction, index: number): ReactElement => (
+                    <React.Fragment key={reaction.id}>
+                      <Image
+                        key={reaction.id}
+                        src={reaction.serviceInfo.image_url}
+                        alt={reaction.serviceInfo.type}
+                        width={24}
+                        height={24}
+                        className="rounded-md invert filter"
+                      />
+                      {index < selectedArea.reactions.length - 1 && (
+                        <ArrowRight color="black" />
+                      )}
+                    </React.Fragment>
+                  )
+                )}
               </div>
             </DialogHeader>
             <div className="space-y-4 py-4">

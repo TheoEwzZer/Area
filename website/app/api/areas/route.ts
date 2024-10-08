@@ -1,21 +1,27 @@
 import { db } from "@/lib/db";
 import { EventHandler, eventHandlers } from "@/lib/eventManager";
+import { AreaWithDetails } from "@/types/globals";
 import { currentUser, User } from "@clerk/nextjs/server";
-import { Action, Area, Reaction, Service, ServiceInfo } from "@prisma/client";
+import {
+  Action,
+  Area,
+  Reaction,
+  ReactionData,
+  Service,
+  ServiceInfo,
+} from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
-interface AreaWithServiceInfo extends Area {
-  action: {
-    serviceInfo: ServiceInfo;
-  };
-  reaction: {
+export interface AreaWithAction extends Area {
+  action: Action & {
     serviceInfo: ServiceInfo;
   };
 }
 
-export interface AreaWithServiceInfoOnly extends Area {
-  actionServiceInfo: ServiceInfo;
-  reactionServiceInfo: ServiceInfo;
+export interface ReactionDataWithReaction extends ReactionData {
+  reaction: Reaction & {
+    serviceInfo: ServiceInfo;
+  };
 }
 
 export async function POST(req: NextRequest): Promise<
@@ -28,8 +34,8 @@ export async function POST(req: NextRequest): Promise<
     actionService,
     actionName,
     actionParameters,
-    reactionService,
-    reactionName,
+    reactionServices,
+    reactionNames,
     reactionParameters,
   } = await req.json();
   const user: User | null = await currentUser();
@@ -40,14 +46,9 @@ export async function POST(req: NextRequest): Promise<
         where: { type: actionService },
       });
 
-    const reactionServiceInfo: ServiceInfo | null =
-      await db.serviceInfo.findUnique({
-        where: { type: reactionService },
-      });
-
-    if (!actionServiceInfo || !reactionServiceInfo) {
+    if (!actionServiceInfo) {
       return NextResponse.json(
-        { detail: "Service information not found" },
+        { detail: "Action service information not found" },
         { status: 404 }
       );
     }
@@ -59,21 +60,44 @@ export async function POST(req: NextRequest): Promise<
       },
     });
 
-    const reaction: Reaction | null = await db.reaction.findFirst({
-      where: {
-        serviceInfoId: reactionServiceInfo.id,
-        name: reactionName,
-      },
-    });
-
-    if (!action || !reaction) {
-      return NextResponse.json(
-        { detail: "Action or reaction not found" },
-        { status: 404 }
-      );
+    if (!action) {
+      return NextResponse.json({ detail: "Action not found" }, { status: 404 });
     }
 
-    if (user?.id && action.id && reaction.id) {
+    const reactions: Reaction[] = [];
+    for (let i: number = 0; i < reactionServices.length; i++) {
+      const reactionServiceInfo: ServiceInfo | null =
+        await db.serviceInfo.findUnique({
+          where: { type: reactionServices[i] },
+        });
+
+      if (!reactionServiceInfo) {
+        return NextResponse.json(
+          {
+            detail: `Reaction service information not found for ${reactionServices[i]}`,
+          },
+          { status: 404 }
+        );
+      }
+
+      const reaction: Reaction | null = await db.reaction.findFirst({
+        where: {
+          serviceInfoId: reactionServiceInfo.id,
+          name: reactionNames[i],
+        },
+      });
+
+      if (!reaction) {
+        return NextResponse.json(
+          { detail: `Reaction not found for ${reactionNames[i]}` },
+          { status: 404 }
+        );
+      }
+
+      reactions.push(reaction);
+    }
+
+    if (user?.id && action.id && reactions.length > 0) {
       const service: Service | null = await db.service.findFirst({
         where: {
           userId: user.id,
@@ -101,22 +125,44 @@ export async function POST(req: NextRequest): Promise<
           [ressourceWatchId, channelWatchId] = result;
         }
       }
-
       const newArea: Area = await db.area.create({
         data: {
           userId: user.id,
           actionId: action.id,
-          reactionId: reaction.id,
           actionData: actionParameters,
-          reactionData: reactionParameters,
-          title: `If ${action.name.toLowerCase()}, then ${reaction.name.toLowerCase()}`,
+          title: `If ${action.name.toLowerCase()}, then ${reactions
+            .map((r: Reaction, index: number): string => {
+              if (index === reactions.length - 1 && reactions.length > 1) {
+                return `and ${r.name.toLowerCase()}`;
+              }
+              return r.name.toLowerCase();
+            })
+            .join(", ")
+            .replace(/, and/, " and")}`,
           channelWatchId: channelWatchId,
           ressourceWatchId: ressourceWatchId,
         },
       });
+
+      await Promise.all(
+        reactions.map((reaction: Reaction, index: number) =>
+          db.reactionData.create({
+            data: {
+              data: reactionParameters[index],
+              area: {
+                connect: { id: newArea.id },
+              },
+              reaction: {
+                connect: { id: reaction.id },
+              },
+            },
+          })
+        )
+      );
+
       return NextResponse.json(newArea);
     } else {
-      throw new Error("User ID, Action ID, or Reaction ID is undefined");
+      throw new Error("User ID, Action ID, or Reactions are undefined");
     }
   } catch (error) {
     console.error("Error creating area:", error);
@@ -128,10 +174,7 @@ export async function POST(req: NextRequest): Promise<
 }
 
 export async function GET(): Promise<
-  | NextResponse<{
-      detail: string;
-    }>
-  | NextResponse<AreaWithServiceInfoOnly[]>
+  NextResponse<{ detail: string }> | NextResponse<AreaWithDetails[]>
 > {
   const user: User | null = await currentUser();
 
@@ -143,32 +186,60 @@ export async function GET(): Promise<
   }
 
   try {
-    const areas: AreaWithServiceInfo[] = await db.area.findMany({
+    const areas: AreaWithAction[] = await db.area.findMany({
       where: {
         userId: user.id,
       },
       include: {
         action: {
-          select: {
-            serviceInfo: true,
-          },
-        },
-        reaction: {
-          select: {
+          include: {
             serviceInfo: true,
           },
         },
       },
     });
 
-    const areasWithServiceInfo: AreaWithServiceInfoOnly[] = areas.map(
-      (area: AreaWithServiceInfo) => ({
-        ...area,
-        actionServiceInfo: area.action.serviceInfo,
-        reactionServiceInfo: area.reaction.serviceInfo,
+    const areasWithDetails: AreaWithDetails[] = await Promise.all(
+      areas.map(async (area: AreaWithAction) => {
+        const reactionData: ReactionDataWithReaction[] =
+          await db.reactionData.findMany({
+            where: {
+              areaId: area.id,
+            },
+            include: {
+              reaction: {
+                include: {
+                  serviceInfo: true,
+                },
+              },
+            },
+          });
+
+        const reactions: {
+          reactionData: ReactionData;
+          serviceInfo: ServiceInfo;
+          id: number;
+          name: string;
+          description: string;
+          serviceInfoId: number;
+        }[] = reactionData.map((rd: ReactionDataWithReaction) => ({
+          ...rd.reaction,
+          reactionData: {
+            id: rd.id,
+            data: rd.data,
+            areaId: rd.areaId,
+            reactionId: rd.reactionId,
+          },
+        }));
+
+        return {
+          ...area,
+          reactions,
+        };
       })
     );
-    return NextResponse.json(areasWithServiceInfo);
+
+    return NextResponse.json(areasWithDetails);
   } catch (error) {
     console.error("Error fetching areas:", error);
     return NextResponse.json(

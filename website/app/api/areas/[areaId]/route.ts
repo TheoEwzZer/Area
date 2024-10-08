@@ -26,7 +26,7 @@ export async function PATCH(
 
   try {
     const area: Area | null = await db.area.findUnique({
-      where: { id: Number(id) },
+      where: { id: Number(id), isActive: true },
     });
 
     if (!area || area.userId !== user.id) {
@@ -109,6 +109,12 @@ export async function DELETE(
         area.ressourceWatchId
       );
     }
+
+    await db.reactionData.deleteMany({
+      where: {
+        areaId: Number(id),
+      },
+    });
 
     await db.area.delete({
       where: { id: Number(id) },

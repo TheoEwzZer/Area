@@ -1,4 +1,10 @@
-import { Action, Area, Reaction, ServiceInfo } from "@prisma/client";
+import {
+  Action,
+  Area,
+  Reaction,
+  ReactionData,
+  ServiceInfo,
+} from "@prisma/client";
 
 export type Roles = "admin" | "user";
 
@@ -19,7 +25,8 @@ export interface AreaWithDetails extends Area {
   action: Action & {
     serviceInfo: ServiceInfo;
   };
-  reaction: Reaction & {
+  reactions: (Reaction & {
     serviceInfo: ServiceInfo;
-  };
+    reactionData: ReactionData;
+  })[];
 }

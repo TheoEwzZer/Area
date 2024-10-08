@@ -4,7 +4,16 @@ import { NextResponse } from "next/server";
 export async function handleGmailAction(
   action: string
 ): Promise<NextResponse<any>> {
-  const userAccessToken: string = await getGmailAccessToken();
+  let userAccessToken: string;
+
+  try {
+    userAccessToken = await getGmailAccessToken();
+  } catch (error) {
+    return NextResponse.json(
+      { detail: "Failed to retrieve access token" },
+      { status: 500 }
+    );
+  }
 
   const userAccount: {
     id: string | null | undefined;

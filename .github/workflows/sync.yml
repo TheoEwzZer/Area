@@ -16,17 +16,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Load .env file
+        run: |
+          echo "PERSONAL_ACCESS_TOKEN=$(cat website/.env | grep PERSONAL_ACCESS_TOKEN | cut -d '=' -f2)" >> $GITHUB_ENV
+
       - name: Set up Git
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
       - name: Add personal repo as remote
-        run: git remote add personal https://github.com/TheoEwzZer/Area.git
+        run: git remote add personal https://$PERSONAL_ACCESS_TOKEN@github.com/TheoEwzZer/Area.git
 
       - name: Push to personal repo
         run: |
           git push personal --all
           git push personal --tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

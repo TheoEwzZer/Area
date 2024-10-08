@@ -9,6 +9,7 @@ import {
   ReactionData,
   Service,
   ServiceInfo,
+  ServiceType,
 } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -22,6 +23,34 @@ export interface ReactionDataWithReaction extends ReactionData {
   reaction: Reaction & {
     serviceInfo: ServiceInfo;
   };
+}
+
+async function getServiceInfo(type: ServiceType): Promise<ServiceInfo | null> {
+  return await db.serviceInfo.findUnique({
+    where: { type },
+  });
+}
+
+async function createReactions(
+  reactions: Reaction[],
+  reactionParameters: any[],
+  areaId: number
+): Promise<void> {
+  await Promise.all(
+    reactions.map((reaction: Reaction, index: number) =>
+      db.reactionData.create({
+        data: {
+          data: reactionParameters[index],
+          area: {
+            connect: { id: areaId },
+          },
+          reaction: {
+            connect: { id: reaction.id },
+          },
+        },
+      })
+    )
+  );
 }
 
 export async function POST(req: NextRequest): Promise<
@@ -42,10 +71,7 @@ export async function POST(req: NextRequest): Promise<
 
   try {
     const actionServiceInfo: ServiceInfo | null =
-      await db.serviceInfo.findUnique({
-        where: { type: actionService },
-      });
-
+      await getServiceInfo(actionService);
     if (!actionServiceInfo) {
       return NextResponse.json(
         { detail: "Action service information not found" },
@@ -59,52 +85,28 @@ export async function POST(req: NextRequest): Promise<
         name: actionName,
       },
     });
-
     if (!action) {
       return NextResponse.json({ detail: "Action not found" }, { status: 404 });
     }
 
-    const reactions: Reaction[] = [];
-    for (let i: number = 0; i < reactionServices.length; i++) {
-      const reactionServiceInfo: ServiceInfo | null =
-        await db.serviceInfo.findUnique({
-          where: { type: reactionServices[i] },
-        });
-
-      if (!reactionServiceInfo) {
-        return NextResponse.json(
-          {
-            detail: `Reaction service information not found for ${reactionServices[i]}`,
-          },
-          { status: 404 }
-        );
-      }
-
-      const reaction: Reaction | null = await db.reaction.findFirst({
-        where: {
-          serviceInfoId: reactionServiceInfo.id,
-          name: reactionNames[i],
-        },
-      });
-
-      if (!reaction) {
-        return NextResponse.json(
-          { detail: `Reaction not found for ${reactionNames[i]}` },
-          { status: 404 }
-        );
-      }
-
-      reactions.push(reaction);
+    const reactions: Reaction[] = await getReactions(
+      reactionServices,
+      reactionNames
+    );
+    if (reactions.length === 0) {
+      return NextResponse.json(
+        { detail: "Reactions not found" },
+        { status: 404 }
+      );
     }
 
-    if (user?.id && action.id && reactions.length > 0) {
+    if (user?.id && action.id) {
       const service: Service | null = await db.service.findFirst({
         where: {
           userId: user.id,
           service: actionService,
         },
       });
-
       if (!service) {
         return NextResponse.json(
           { detail: "Service not found" },
@@ -112,53 +114,24 @@ export async function POST(req: NextRequest): Promise<
         );
       }
 
-      const handler: EventHandler = eventHandlers[actionService];
-      let ressourceWatchId: string | null = null;
-      let channelWatchId: string | null = null;
-      if (handler?.setupWebhook) {
-        const result: [string, string] | null = await handler.setupWebhook(
-          service,
-          actionParameters,
-          action.id
-        );
-        if (result) {
-          [ressourceWatchId, channelWatchId] = result;
-        }
-      }
-      const newArea: Area = await db.area.create({
-        data: {
-          userId: user.id,
-          actionId: action.id,
-          actionData: actionParameters,
-          title: `If ${action.name.toLowerCase()}, then ${reactions
-            .map((r: Reaction, index: number): string => {
-              if (index === reactions.length - 1 && reactions.length > 1) {
-                return `and ${r.name.toLowerCase()}`;
-              }
-              return r.name.toLowerCase();
-            })
-            .join(", ")
-            .replace(/, and/, " and")}`,
-          channelWatchId: channelWatchId,
-          ressourceWatchId: ressourceWatchId,
-        },
-      });
-
-      await Promise.all(
-        reactions.map((reaction: Reaction, index: number) =>
-          db.reactionData.create({
-            data: {
-              data: reactionParameters[index],
-              area: {
-                connect: { id: newArea.id },
-              },
-              reaction: {
-                connect: { id: reaction.id },
-              },
-            },
-          })
-        )
+      const { ressourceWatchId, channelWatchId } = await setupWebhookIfNeeded(
+        actionService,
+        service,
+        actionParameters,
+        action.id
       );
+
+      const newArea: Area = await createArea(
+        user.id,
+        action.id,
+        actionParameters,
+        action,
+        reactions,
+        channelWatchId,
+        ressourceWatchId
+      );
+
+      await createReactions(reactions, reactionParameters, newArea.id);
 
       return NextResponse.json(newArea);
     } else {
@@ -171,6 +144,87 @@ export async function POST(req: NextRequest): Promise<
       { status: 500 }
     );
   }
+}
+
+async function getReactions(
+  reactionServices: ServiceType[],
+  reactionNames: string[]
+): Promise<Reaction[]> {
+  const reactions: Reaction[] = [];
+  for (let i: number = 0; i < reactionServices.length; i++) {
+    const reactionServiceInfo: ServiceInfo | null = await getServiceInfo(
+      reactionServices[i]
+    );
+    if (!reactionServiceInfo) {
+      throw new Error(
+        `Reaction service information not found for ${reactionServices[i]}`
+      );
+    }
+
+    const reaction: Reaction | null = await db.reaction.findFirst({
+      where: {
+        serviceInfoId: reactionServiceInfo.id,
+        name: reactionNames[i],
+      },
+    });
+    if (!reaction) {
+      throw new Error(`Reaction not found for ${reactionNames[i]}`);
+    }
+
+    reactions.push(reaction);
+  }
+  return reactions;
+}
+
+async function setupWebhookIfNeeded(
+  actionService: ServiceType,
+  service: Service,
+  actionParameters: any,
+  actionId: number
+): Promise<{ ressourceWatchId: string | null; channelWatchId: string | null }> {
+  const handler: EventHandler = eventHandlers[actionService];
+  let ressourceWatchId: string | null = null;
+  let channelWatchId: string | null = null;
+  if (handler?.setupWebhook) {
+    const result: [string, string] | null = await handler.setupWebhook(
+      service,
+      actionParameters,
+      actionId
+    );
+    if (result) {
+      [ressourceWatchId, channelWatchId] = result;
+    }
+  }
+  return { ressourceWatchId, channelWatchId };
+}
+
+async function createArea(
+  userId: string,
+  actionId: number,
+  actionParameters: any,
+  action: Action,
+  reactions: Reaction[],
+  channelWatchId: string | null,
+  ressourceWatchId: string | null
+): Promise<Area> {
+  return await db.area.create({
+    data: {
+      userId,
+      actionId,
+      actionData: actionParameters,
+      title: `If ${action.name.toLowerCase()}, then ${reactions
+        .map((r: Reaction, index: number): string => {
+          if (index === reactions.length - 1 && reactions.length > 1) {
+            return `and ${r.name.toLowerCase()}`;
+          }
+          return r.name.toLowerCase();
+        })
+        .join(", ")
+        .replace(/, and/, " and")}`,
+      channelWatchId,
+      ressourceWatchId,
+    },
+  });
 }
 
 export async function GET(): Promise<

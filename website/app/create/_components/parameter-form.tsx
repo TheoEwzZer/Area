@@ -159,7 +159,7 @@ export default function ParameterForm({
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
+                      <PopoverContent className="min-w-[200px] p-0">
                         <Command>
                           <CommandInput placeholder="Search option..." />
                           <CommandList>

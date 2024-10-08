@@ -1,4 +1,5 @@
 import { discordClient } from "@/discordBot";
+import { Octokit } from "@octokit/rest";
 import { Action, Reaction, Service } from "@prisma/client";
 import { ColorResolvable, EmbedBuilder, TextChannel } from "discord.js";
 import * as fs from "fs";
@@ -413,6 +414,34 @@ export const eventHandlers: Record<string, EventHandler> = {
 
         default:
           console.error(`Unknown Discord reaction: ${reaction.name}`);
+      }
+    },
+  },
+  GITHUB: {
+    executeReaction: async (
+      reaction: Reaction,
+      reactionData: any,
+      service: Service
+    ): Promise<void> => {
+      switch (reaction.name) {
+        case "Create an issue": {
+          const octokit = new Octokit({
+            auth: service.accessToken,
+          });
+
+          const [owner, repo] = reactionData.repository.split("/");
+
+          await octokit.rest.issues.create({
+            owner,
+            repo,
+            title: reactionData.title,
+            body: reactionData.body,
+          });
+          break;
+        }
+
+        default:
+          console.error(`Unknown GitHub reaction: ${reaction.name}`);
       }
     },
   },

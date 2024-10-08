@@ -1,4 +1,9 @@
-import { getGithubAccessToken, getUserAccounts } from "@/lib/github";
+import {
+  getGithubAccessToken,
+  getUserAccounts,
+  getUserRepositories,
+} from "@/lib/github";
+import { Option } from "@/types/globals";
 import { NextResponse } from "next/server";
 
 export async function handleGithubAction(
@@ -10,6 +15,25 @@ export async function handleGithubAction(
   if (!userAccount?.login) {
     return NextResponse.json({ detail: "No account found" }, { status: 400 });
   }
+
+  const userRepositories: any[] = await getUserRepositories(
+    userAccessToken,
+    true
+  );
+
+  if (!userRepositories || userRepositories.length === 0) {
+    return NextResponse.json(
+      { detail: "No repositories found" },
+      { status: 400 }
+    );
+  }
+
+  const repositoryOptions: Option[] = userRepositories.map(
+    (repo: any): Option => ({
+      value: `${repo.owner.login}/${repo.name}`,
+      label: `${repo.owner.login}/${repo.name}`,
+    })
+  );
 
   switch (action) {
     case "Any new issue":
@@ -31,7 +55,7 @@ export async function handleGithubAction(
         ],
       });
 
-    case "Create new Gist":
+    case "Create an issue":
       return NextResponse.json({
         actionName: action,
         parameters: [
@@ -47,51 +71,19 @@ export async function handleGithubAction(
             ],
           },
           {
-            name: "description",
-            label: "Description",
-            type: "text",
-          },
-          {
-            name: "filename",
-            label: "Filename",
-            type: "text",
-          },
-          {
-            name: "fileContent",
-            label: "File content",
-            type: "textarea",
-          },
-        ],
-      });
-
-    case "Create an issue/pull request comment":
-      return NextResponse.json({
-        actionName: action,
-        parameters: [
-          {
-            name: "account",
-            label: "GitHub account",
+            name: "repository",
+            label: "Repository",
             type: "select",
-            options: [
-              {
-                value: userAccount.login,
-                label: userAccount.login,
-              },
-            ],
+            options: repositoryOptions,
           },
           {
-            name: "repositoryName",
-            label: "Repository Name",
+            name: "title",
+            label: "Title",
             type: "text",
           },
           {
-            name: "issueNumber",
-            label: "Issue Number",
-            type: "number",
-          },
-          {
-            name: "fileComment",
-            label: "File Comment",
+            name: "body",
+            label: "Body",
             type: "textarea",
           },
         ],

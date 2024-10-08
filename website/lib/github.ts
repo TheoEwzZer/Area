@@ -39,7 +39,10 @@ export async function getUserAccounts(accessToken: string): Promise<any> {
   return data;
 }
 
-export async function getUserRepositories(accessToken: string): Promise<any> {
+export async function getUserRepositories(
+  accessToken: string,
+  requirePullAccess: boolean = false
+): Promise<any> {
   const octokit = new Octokit({
     auth: accessToken,
   });
@@ -47,6 +50,10 @@ export async function getUserRepositories(accessToken: string): Promise<any> {
   const { data } = await octokit.rest.repos.listForAuthenticatedUser({
     visibility: "all",
   });
+
+  if (requirePullAccess) {
+    return data.filter((repo: any): any => repo.permissions.pull);
+  }
 
   return data;
 }

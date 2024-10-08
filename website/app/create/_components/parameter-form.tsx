@@ -23,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Option } from "@/types/globals";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -131,62 +132,86 @@ export default function ParameterForm({
               key={param.name}
               name={param.name}
               control={form.control}
+              rules={{ required: `${param.label} is required` }}
               render={({
                 field,
               }: {
                 field: ControllerRenderProps<Record<string, string>, string>;
-              }): ReactElement => (
-                <FormItem className="space-y-1">
-                  <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
-                  {param.type === "select" ? (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? (getOptions(param).find(
-                                  (option: Option): boolean =>
-                                    option.value === field.value
-                                )?.label ?? "Select an option")
-                              : "Select an option"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="min-w-[200px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search option..." />
-                          <CommandList>
-                            <CommandEmpty>No option found</CommandEmpty>
-                            <CommandGroup>
-                              {getOptions(param).map(
-                                (option: Option): ReactElement =>
-                                  renderCommandItem(param, option, field)
+              }): ReactElement => {
+                let inputElement: ReactElement;
+                switch (param.type) {
+                  case "select":
+                    inputElement = (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
                               )}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  ) : (
-                    <FormControl>
-                      <Input
-                        type={param.type}
-                        id={param.name}
-                        {...field}
-                        required
-                      />
-                    </FormControl>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
+                            >
+                              {field.value
+                                ? (getOptions(param).find(
+                                    (option: Option): boolean =>
+                                      option.value === field.value
+                                  )?.label ?? "Select an option")
+                                : "Select an option"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="min-w-[200px] p-0">
+                          <Command>
+                            <CommandInput placeholder="Search option..." />
+                            <CommandList>
+                              <CommandEmpty>No option found</CommandEmpty>
+                              <CommandGroup>
+                                {getOptions(param).map(
+                                  (option: Option): ReactElement =>
+                                    renderCommandItem(param, option, field)
+                                )}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                    break;
+                  case "textarea": {
+                    inputElement = (
+                      <FormControl>
+                        <Textarea
+                          className="resize-none"
+                          {...field}
+                          required
+                        />
+                      </FormControl>
+                    );
+                    break;
+                  }
+                  default:
+                    inputElement = (
+                      <FormControl>
+                        <Input
+                          type={param.type}
+                          id={param.name}
+                          {...field}
+                          required
+                        />
+                      </FormControl>
+                    );
+                }
+
+                return (
+                  <FormItem className="space-y-1">
+                    <FormLabel htmlFor={param.name}>{param.label}</FormLabel>
+                    {inputElement}
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
           )
         )}

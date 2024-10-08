@@ -66,7 +66,7 @@ The project is built using the following technologies:
 #### GitHub Reactions
 
 - **Create new Gist**: This action will create a Gist for you.
-- **Create an issue/pull request comment**: This action will comment in a specific issue or pull request on GitHub.
+- **Create an issue**: This Action will create a new issue for the repository you specify.
 
 ### Gmail
 

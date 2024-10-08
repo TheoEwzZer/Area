@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { currentUser, User } from "@clerk/nextjs/server";
+import { Octokit } from "@octokit/rest";
 import { Service } from "@prisma/client";
 
 export async function getGithubAccessToken(): Promise<string> {
@@ -29,16 +30,23 @@ export async function getGithubAccessToken(): Promise<string> {
 }
 
 export async function getUserAccounts(accessToken: string): Promise<any> {
-  const response = await fetch("https://api.github.com/user", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/vnd.github.v3+json",
-    },
+  const octokit = new Octokit({
+    auth: accessToken,
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch GitHub user accounts");
-  }
+  const { data } = await octokit.rest.users.getAuthenticated();
 
-  return response.json();
+  return data;
+}
+
+export async function getUserRepositories(accessToken: string): Promise<any> {
+  const octokit = new Octokit({
+    auth: accessToken,
+  });
+
+  const { data } = await octokit.rest.repos.listForAuthenticatedUser({
+    visibility: "all",
+  });
+
+  return data;
 }

@@ -173,7 +173,7 @@ export default function MyAreas(): ReactElement {
               .fill(null)
               .map(
                 (_: any, index: number): ReactElement => (
-                  <SkeletonCard key={index} />
+                  <SkeletonCard key={index} /> //NOSONAR
                 )
               )
           : filteredAreas.map(
